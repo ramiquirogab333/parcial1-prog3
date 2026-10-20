@@ -116,44 +116,87 @@ El Integrante 6 coordinará con el equipo el registro de las siguientes evidenci
 
 ## 6. Flujo SDD + OpenSpec
 
-Todo desarrollo debe alinearse con la estructura de especificación **OpenSpec**:
+El proyecto usa **OpenSpec v1.14+** inicializado con `openspec init --tools opencode` (schema `spec-driven`). El layout es el que genera el CLI — **no** se inventan carpetas ni se editan specs a mano.
 
 ```
 openspec/
-├── config.yaml
+├── config.yaml                      # schema + contexto (artefactos en español)
 ├── specs/
-│   ├── 01-estructura-html.md        (Integrante 1)
-│   ├── 02-estilos-responsivos.md    (Integrante 2)
-│   ├── 03-modelo-datos-catalogo.md  (Integrante 3)
-│   ├── 04-formularios-altas.md      (Integrante 4)
-│   ├── 05-ventas-e-historial.md     (Integrante 5)
-│   └── 06-persistencia-y-pruebas.md (Integrante 6)
-└── proposals/
-    └── [id-propuesta]/
-        ├── proposal.md
-        └── tasks.md
+│   └── <capability>/spec.md         # verdad de referencia, se actualiza al archivar
+└── changes/
+    ├── <nombre-del-change>/         # trabajo en curso
+    │   ├── proposal.md              # qué y por qué
+    │   ├── design.md                # cómo (solo si el cambio lo justifica)
+    │   ├── tasks.md                 # checklist de implementación
+    │   └── specs/                   # delta specs de ESTE change
+    └── archive/                     # changes cerrados: YYYY-MM-DD-<nombre>/
 ```
 
-### Ciclo de Trabajo Obligatorio:
-1. **Fase SPEC:** Redactar/actualizar la especificación técnica correspondiente en `openspec/specs/`.
-2. **Fase PROPOSAL:** Presentar propuesta de cambio (`proposal.md`) y tareas (`tasks.md`).
-3. **Aprobación:** Obtener aprobación explícita del usuario/docente.
-4. **Fase IMPLEMENTACIÓN:** Modificar únicamente los archivos asignados al módulo.
-5. **Fase VERIFICACIÓN:** Probar el caso correspondiente e informarlo.
+### Capabilities del proyecto (una por módulo)
+
+Cada módulo alimenta una capability en `openspec/specs/<capability>/spec.md`:
+
+| Módulo | Integrante | Capability |
+| ----- | ----- | ----- |
+| **M01** | Integrante 1 | `01-estructura-html` |
+| **M02** | Integrante 2 | `02-estilos-responsivos` |
+| **M03** | Integrante 3 | `03-modelo-datos-catalogo` |
+| **M04** | Integrante 4 | `04-formularios-altas` |
+| **M05** | Integrante 5 | `05-ventas-e-historial` |
+| **M06** | Integrante 6 | `06-persistencia-y-pruebas` |
+
+### Comandos disponibles (OpenCode)
+
+Los comandos y skills se generan en `.opencode/` y **se versionan en el repo**: al clonar ya los tenés.
+
+| Comando | Para qué |
+| ----- | ----- |
+| `/opsx-propose "<idea>"` | Crear el change completo: `proposal.md`, `design.md`, delta specs y `tasks.md`. |
+| `/opsx-explore` | Pensar/investigar sin comprometerse a implementar nada. |
+| `/opsx-apply <change>` | Implementar las tareas del `tasks.md`. |
+| `/opsx-update <change>` | Revisar/reconciliar los artefactos del change tras un cambio de decisión. |
+| `/opsx-sync <change>` | Pasar los delta specs a `openspec/specs/` sin archivar. |
+| `/opsx-archive <change>` | Cerrar el change y sincronizar las specs principales. |
+
+CLI de consulta: `openspec list`, `openspec status --change <nombre>`, `openspec view`, `openspec validate --all`.
+
+### Ciclo de Trabajo Obligatorio (regla del proyecto; más estricta que la herramienta)
+
+1. **Fase SPEC/PROPOSE:** `/opsx-propose "<idea>"` — redactar qué y por qué en `proposal.md` y los delta specs en `changes/<nombre>/specs/`.
+2. **Fase DESGLOSE:** Revisar `tasks.md` y dejar una tarea por paso verificable.
+3. **Aprobación:** Obtener aprobación explícita del usuario/docente **antes** de escribir código.
+4. **Fase IMPLEMENTACIÓN:** `/opsx-apply <change>` — modificar únicamente los archivos asignados al módulo.
+5. **Fase VERIFICACIÓN:** Probar el/los CP correspondientes de la sección 5 e informarlo.
+6. **Fase ARCHIVE:** `/opsx-archive <change>` cuando esté verificado (mueve el change a `changes/archive/`).
+
+### Reglas de trabajo en equipo (6 personas, un repo)
+
+* **Un change por unidad de trabajo**, con prefijo del módulo: `m03-buscador-catalogo`, `m04-alta-libros`, etc.
+* **Nunca dos personas trabajan el mismo change.** Si dos módulos se necesitan, se encadenan por dependencia, no se editan en paralelo.
+* **Nadie edita `openspec/specs/` a mano:** se actualiza con `/opsx-sync` o `/opsx-archive`.
+* Si alguien cambia `openspec/config.yaml` o el perfil de workflows, avisar al equipo y correr `openspec update`.
+* Antes de pedir review: `openspec validate --all` tiene que pasar sin errores.
 
 ---
 
 ## 7. Convenciones de Git y Commits
 
-* **Estrategia de Ramas:**
-  * `main`: Código estable.
-  * `develop`: Integración.
-  * `feature/m01-html-estructura`
-  * `feature/m02-css-estilos`
-  * `feature/m03-js-catalogo`
-  * `feature/m04-js-altas`
-  * `feature/m05-js-ventas`
-  * `feature/m06-js-persistencia-readme`
+* **Estrategia de Ramas: NO se usan ramas.** Todo el equipo trabaja directo sobre `main`. Es un proyecto corto y el trabajo es secuencial, así que no hay `develop` ni `feature/*`.
+
+* **Orden de trabajo (lineal y acumulativo):**
+
+  | Orden | Módulo | Entregable | Depende de |
+  | ----- | ----- | ----- | ----- |
+  | 1 | **M01** | `index.html` con las 5 vistas | — |
+  | 2 | **M02** | `css/*.css` | M01 (necesita los contenedores) |
+  | 3 | **M03** | `js/data.js`, `js/catalogo.js` | M01 (ids del DOM) |
+  | 4 | **M04** | `js/libros.js`, `js/clientes.js` | M03 (semillas y arrays) |
+  | 5 | **M05** | `js/ventas.js`, `js/historial.js` | M03 + M04 |
+  | 6 | **M06** | `js/storage.js`, `README.md` | M03–M05 |
+
+  Cada integrante **no arranca hasta que el anterior esté cerrado** (`/opsx-archive` + push en `main`). Si hace falta adelantar trabajo, se avisa al equipo, pero nunca se toca el mismo archivo que otro en simultáneo.
+
+* **Antes de empezar a trabajar:** `git pull --rebase origin main` para traer los cambios del compañero anterior.
 
 * **Formato de Commits (Conventional Commits en Español):**
   * `feat(m01): agregar maquetado semantico para vista de ventas`
@@ -162,6 +205,9 @@ openspec/
   * `fix(m04): corregir validacion de email duplicado case-insensitive`
   * `feat(m05): asegurar inmutabilidad del precio historico en venta`
   * `docs(m06): registrar evidencia del caso de prueba cp-06 en README`
+  * `chore(openspec): ...` para cambios de especificación o scaffolding
+
+* **Commits chicos y frecuentes:** un commit por avance verificable (una vista, una función, un fix), no un commit gigante al final.
 
 ---
 
