@@ -89,4 +89,4 @@
 - [x] 9.2 Commit con el formato del proyecto: `feat(m03): implementar modelo de datos, catalogo con filtro y navegacion entre vistas`.
 - [ ] 9.3 Reportar a M04 y M05 la API publicada (`Datos.*`, `Catalogo.render()` y `Navegacion.mostrarVista()`) antes de que empiecen a escribir.
 - [ ] 9.4 Avisar a M02 que debe incluir `[hidden] { display: none; }` en su hoja de estilos para no pisar el ocultamiento de vistas.
-- [ ] 9.5 Siguiente paso: `/opsx-archive m03-modelo-datos-catalogo` una vez verificado el CP-01 y la navegación.
+- [x] 9.5 Siguiente paso: `/opsx-archive m03-modelo-datos-catalogo` una vez verificado el CP-01 y la navegación.

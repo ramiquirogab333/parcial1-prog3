@@ -1,5 +1,9 @@
 # 03-modelo-datos-catalogo — Delta Specification
 
+## Purpose
+
+Define el modelo de datos local de la librería —libros, editoriales, géneros, autores y clientes—, su API global de consulta y el catálogo que se renderiza y se filtra por título, incluido el intercambio de las cinco vistas del documento.
+
 ## ADDED Requirements
 
 ### Requirement: Modelo de datos semilla con identificadores estables
