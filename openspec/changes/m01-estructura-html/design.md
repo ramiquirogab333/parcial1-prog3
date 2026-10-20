@@ -54,6 +54,18 @@ El markup de las altas de libro, alta de cliente y venta simulada se entrega com
 
 **Trade-off:** M01 crece en tamaño. Se acepta porque el maquetado es exactamente el Ejercicio 1.
 
+**Punto de extensión reservado (resuelve el hueco de los `<link>` y `<script>`):** si nadie más puede editar `index.html`, ningún módulo podría cargar su CSS ni su JS. Por eso M01 deja dos bloques delimitados por comentarios:
+
+```html
+<!-- M02: hojas de estilo (agregar una sola línea <link rel="stylesheet" href="css/...">) -->
+<!-- FIN M02 -->
+
+<!-- M03-M06: scripts de la aplicación (agregar una línea <script src="js/..."></script> por archivo, en orden de dependencia) -->
+<!-- FIN scripts -->
+```
+
+Regla: cada módulo agrega **sólo sus propias líneas** dentro del bloque que le corresponde, sin reordenar ni tocar el resto del markup. El bloque de scripts va al final de `<body>` para que el DOM ya exista. En M01 ambos bloques quedan con comentarios y **sin ninguna etiqueta activa** (`<script>`/`<link>`), de modo que el Ejercicio 1 se entrega sin recursos externos y sin 404 en consola.
+
 ### D4 — Selectores vacíos en el markup, poblados desde datos
 
 `libro-editorial`, `libro-genero`, `libro-autores`, `venta-cliente` y `venta-libro` se entregan sin `<option>` (o sólo con una opción inicial de tipo «Seleccione…»), para que M03/M04 los pueblen desde los arrays semilla.
@@ -103,6 +115,8 @@ Los formularios no llevan `required`, `pattern` ni `minlength`; sólo se usan `t
 **Por qué:** los mensajes de validación del navegador aparecen en el idioma del navegador, no se pueden estilizar y competirían con los mensajes en español que exige el Ejercicio 4 (CP-02, CP-03 y CP-04). La validación y sus mensajes son responsabilidad de M04/M05.
 
 **Alternativa descartada:** combinar `required` con `novalidate` en el `<form>`; deja atributos contradictorios y ensucia la auditoría del markup.
+
+**Corrección durante la implementación:** no alcanza con omitir `required`/`pattern`. `type="email"` valida el formato y `min`/`step` validan rango y escala, y en todos esos casos el navegador **bloquea el `submit`** antes de que el JS muestre su mensaje, con un texto en el idioma del navegador. Por eso `form-libro` y `form-cliente` llevan el atributo `novalidate`: la validación y los mensajes en español son responsabilidad exclusiva de M04. La vista de venta no tiene `<form>`, así que `venta-cantidad` (con `min`/`step`) tampoco dispara validación nativa; M05 valida al agregar el renglón.
 
 ## Contrato de ids del DOM
 
