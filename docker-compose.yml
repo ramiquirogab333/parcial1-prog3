@@ -1,0 +1,20 @@
+# Entorno local del frontend de la Librería.
+# Uso: docker compose up -d --build   ->  http://localhost:8080
+# En EasyPanel se puede desplegar este mismo archivo (App -> Docker Compose)
+# o apuntar la App al Dockerfile; el puerto interno del contenedor es 80.
+services:
+  libreria:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: parcial1-prog3-libreria:local
+    container_name: parcial1-prog3-libreria
+    ports:
+      - "8080:80"
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://127.0.0.1/"]
+      interval: 30s
+      timeout: 3s
+      retries: 3
+      start_period: 5s

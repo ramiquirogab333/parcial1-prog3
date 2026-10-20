@@ -1,0 +1,18 @@
+# Contexto de build mínimo: a la imagen solo entra el sitio estático.
+.git
+.gitignore
+.gitattributes
+.dockerignore
+Dockerfile
+docker-compose.yml
+docker-compose.*.yml
+.env
+.env.*
+*.md
+.opencode
+.github
+.vscode
+.idea
+openspec
+node_modules
+*.log

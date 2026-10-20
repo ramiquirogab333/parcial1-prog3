@@ -1,0 +1,92 @@
+# Despliegue automático a la VPS (EasyPanel) al hacer push a main.
+#
+# 1) Job "build": construye la imagen y la arranca para verificar que el sitio
+#    responde. Si el Dockerfile o nginx.conf se rompen, el deploy no sale.
+# 2) Job "deploy": dispara el webhook de la app en EasyPanel, que baja el
+#    commit nuevo y reconstruye el contenedor en la VPS.
+#
+# Secret requerido (Settings > Secrets and variables > Actions):
+#   EASYPANEL_DEPLOY_WEBHOOK -> URL del webhook de deploy de la app en EasyPanel
+#   (App > General/Deploy > "Deploy Webhook", es una URL con token).
+name: Deploy a la VPS
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+# Un deploy a la vez: si llegan dos push seguidos, no se pisan.
+concurrency:
+  group: deploy-main
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    name: Verificar imagen Docker
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Preparar Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Construir imagen (sin publicar)
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          push: false
+          load: true
+          tags: parcial1-prog3-libreria:ci
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: Smoke test (el sitio tiene que responder)
+        run: |
+          set -euo pipefail
+          docker run -d --name smoke -p 8080:80 parcial1-prog3-libreria:ci
+          for i in $(seq 1 15); do
+            if curl -fsS http://localhost:8080/ | grep -qi "librer"; then
+              echo "OK: nginx sirve index.html"
+              exit 0
+            fi
+            sleep 2
+          done
+          echo "::error::El contenedor no devolvió el sitio"
+          docker logs smoke || true
+          exit 1
+
+      - name: Limpiar contenedor de prueba
+        if: always()
+        run: docker rm -f smoke || true
+
+  deploy:
+    name: Desplegar en EasyPanel
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Disparar webhook de EasyPanel
+        env:
+          WEBHOOK: ${{ secrets.EASYPANEL_DEPLOY_WEBHOOK }}
+        run: |
+          set -euo pipefail
+          if [ -z "${WEBHOOK:-}" ]; then
+            echo "::error::Falta el secret EASYPANEL_DEPLOY_WEBHOOK (ver README de despliegue)"
+            exit 1
+          fi
+          for i in 1 2 3 4 5; do
+            code=$(curl -sS -o /tmp/resp -w '%{http_code}' -X POST "$WEBHOOK") || code=000
+            echo "Intento $i -> HTTP $code"
+            cat /tmp/resp 2>/dev/null || true
+            echo ""
+            if [ "$code" -ge 200 ] && [ "$code" -lt 300 ]; then
+              echo "Deploy disparado en EasyPanel"
+              exit 0
+            fi
+            sleep 10
+          done
+          echo "::error::EasyPanel rechazó el deploy (revisar el webhook y los logs de la app)"
+          exit 1
