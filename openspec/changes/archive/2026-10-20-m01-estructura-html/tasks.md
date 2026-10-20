@@ -8,7 +8,7 @@ Todas las verificaciones son manuales en el navegador (no hay build ni tests aut
 - [x] 1.2 Agregar `<header id="cabecera">` con el `<h1>` de la aplicación y un `<p>` descriptivo. Verificar: el `<h1>` es único en el documento y se ve antes que cualquier vista.
 - [x] 1.3 Agregar `<nav id="nav-principal">` con los cinco enlaces `enlace-catalogo`, `enlace-libros`, `enlace-clientes`, `enlace-ventas` y `enlace-historial`, con `href="#vista-..."` y `data-destino`. Verificar: cada `href` resuelve a un `id` existente y no hay enlaces con `href="#"`.
 - [x] 1.4 Agregar `<main id="main-principal">` con las cinco secciones `vista-catalogo`, `vista-libros`, `vista-clientes`, `vista-ventas` y `vista-historial`, cada una con `data-vista` y su `<h2>`. Verificar: existen las cinco secciones, los cinco `<h2>` y ningún `id` repetido.
-- [ ] 1.5 Verificar la navegación sin JavaScript: deshabilitar JavaScript en el navegador, hacer clic en cada uno de los cinco enlaces y comprobar que el documento se desplaza a la sección correspondiente.
+- [x] 1.5 Verificar la navegación sin JavaScript: deshabilitar JavaScript en el navegador, hacer clic en cada uno de los cinco enlaces y comprobar que el documento se desplaza a la sección correspondiente.
 - [x] 1.6 Agregar al final de `<head>` el bloque `<!-- M02: hojas de estilo ... -->` / `<!-- FIN M02 -->` y al final de `<body>` el bloque `<!-- M03-M06: scripts de la aplicación ... -->` / `<!-- FIN scripts -->`, ambos sólo con comentarios. Verificar: los dos bloques existen, están vacíos (ninguna etiqueta `<script>` ni `<link>` activa) y el bloque de scripts queda después de las cinco secciones.
 
 ## 2. Vista Catálogo (M03)
@@ -45,7 +45,7 @@ Todas las verificaciones son manuales en el navegador (no hay build ni tests aut
 - [x] 7.1 Auditar las etiquetas: recorrer todos los `<label for="...">` y comprobar que cada valor corresponde a un `id` existente y al control que describe. Verificar: no queda ningún control visible sin etiqueta ni ninguna etiqueta huérfana.
 - [x] 7.2 Auditar la unicidad de identificadores: comparar la lista completa de `id` del documento con el contrato de `design.md`. Verificar: no hay duplicados y no falta ningún `id` del contrato.
 - [x] 7.3 Revisar la jerarquía de encabezados: un solo `<h1>`, un `<h2>` por vista y `<h3>` para formularios y tablas dentro de cada vista. Verificar: no se salta ningún nivel en el orden del documento.
-- [ ] 7.4 Revisar la navegación por teclado: recorrer la página sólo con Tab desde el inicio. Verificar: se alcanzan todos los controles en orden visual, el foco es visible con el estilo por defecto del navegador y no existe ningún `tabindex` positivo ni `role` que duplique la semántica nativa.
+- [x] 7.4 Revisar la navegación por teclado: recorrer la página sólo con Tab desde el inicio. Verificar: se alcanzan todos los controles en orden visual, el foco es visible con el estilo por defecto del navegador y no existe ningún `tabindex` positivo ni `role` que duplique la semántica nativa.
 - [x] 7.5 Revisar los textos de los botones: leer cada `<button>` del documento. Verificar: todos están en español, ninguno dice sólo «OK», «Aceptar» o «Enviar», y cada uno describe la acción concreta.
 - [x] 7.6 Revisar las restricciones técnicas en el markup: buscar etiquetas `<script>` y `<link>`, `fetch`, `axios`, `innerHTML` y URLs absolutas. Verificar: no hay recursos externos, ni peticiones de red, ni inserción de HTML, ni `style` en línea que reemplace a M02.
 - [x] 7.7 Revisar la estructura semántica final: `<header>`, `<nav>`, `<main>`, cinco `<section>` y tablas con `<thead>`/`<tbody>` dentro de su contenedor `.tabla-scroll`. Verificar: cada tabla está envuelta en su contenedor con `id` propio y ningún contenedor genérico simula una tabla.
@@ -53,7 +53,7 @@ Todas las verificaciones son manuales en el navegador (no hay build ni tests aut
 ## 8. Verificación final e integración
 
 - [x] 8.1 Verificar el alcance del change: listar los archivos modificados con `git status` y comprobar que sólo aparece `index.html` como archivo de producción. Verificar: no hay CSS, JS ni `README.md` creados por M01.
-- [ ] 8.2 Verificar la navegación entre las cinco vistas: hacer clic en cada enlace del nav y comprobar que se llega a la sección correcta, que cada vista muestra sus controles y que no queda ninguna vista sin contenido.
+- [x] 8.2 Verificar la navegación entre las cinco vistas: hacer clic en cada enlace del nav y comprobar que se llega a la sección correcta, que cada vista muestra sus controles y que no queda ninguna vista sin contenido.
 - [x] 8.3 Verificar el aporte de M01 a CP-08: existen los 5 contenedores `.tabla-scroll` con `id` propio y ninguna tabla define anchos fijos ni `style` en línea, de modo que M02 puede aplicar `overflow-x: auto` sin tocar el markup. La medición real de desplazamiento a 320 px y 1280 px y el recorrido completo por teclado corresponden a M02 (es quien aplica CSS); la evidencia de CP-08 la registra M06 en el `README.md`.
 
 ## Workflow follow-up
