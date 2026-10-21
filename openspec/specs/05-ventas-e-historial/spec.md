@@ -1,7 +1,7 @@
 # 05-ventas-e-historial Specification
 
 ## Purpose
-TBD - created by archiving change m05-venta-simulada-historial. Update Purpose after archive.
+Define la venta simulada y su historial: composición del ticket con renglones validados, cálculo de subtotales y total con dos decimales, confirmación de la venta con valores históricos copiados (precio unitario, título y nombre del cliente) y listado inmutable de ventas confirmadas con acceso a su detalle.
 
 ## Requirements
 
