@@ -34,11 +34,17 @@ Para evitar conflictos en Git y garantizar autonomía, cada integrante asume la 
 | Módulo  | Integrante Responsable | Ejercicio de Consigna                                       | Archivos Principales              | Responsabilidades Clave                                                                                                                                                                                                             |
 | ------- | ---------------------- | ----------------------------------------------------------- | --------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | **M01** | Integrante 1           | **Ejercicio 1:** Estructura y Pantallas HTML                | `index.html`                      | Maquetado HTML semántico (`<header>`, `<nav>`, `<main>`, `<section>`, `<table>`, etc.), estructura de las 5 vistas, `<label>` asociados a controles, textos descriptivos y contenedores de mensajes de estado.                      |
-| **M02** | Integrante 2           | **Ejercicio 2:** Presentación con CSS y Uso Adaptable       | `style.css`                       | Identidad visual (colores, tipografía, botones), maquetación con Flexbox/Grid, adaptabilidad en 320px y 1280px, scroll interno de tablas, foco visible y accesibilidad visual.                                                      |
-| **M03** | Integrante 3           | **Ejercicio 3:** Datos Locales, Catálogo y Filtro           | `js/data.js`, `js/catalogo.js`    | Definición de estructuras de datos y objetos iniciales (6 libros, 2 editoriales, 2 géneros, 3 autores, 3 clientes), renderizado del catálogo y lógica del buscador por título (coincidencias parciales, `trim()`, `toLowerCase()`). |
-| **M04** | Integrante 4           | **Ejercicio 4:** Alta de Libros y Clientes                  | `js/libros.js`, `js/clientes.js`  | Lógica de formularios de alta, poblamiento dinámico de selectores, validación estricta de ISBN único, email válido/único, prevención de envío por defecto (`e.preventDefault()`) y actualización del DOM.                           |
-| **M05** | Integrante 5           | **Ejercicio 5:** Venta Simulada e Historial                 | `js/ventas.js`, `js/historial.js` | Selección de cliente, composición de renglones de venta, prevención de libros duplicados en el ticket, cálculo de subtotales/totales (`toFixed(2)`), e inmutabilidad del precio histórico guardado.                                 |
-| **M06** | Integrante 6           | **Ejercicio 6:** Persistencia, Verificación y Documentación | `js/storage.js`, `README.md`      | Encapsulamiento de lectura/escritura en `localStorage`, recarga sin duplicación de semillas, ejecución y registro comprobable de los 8 casos de prueba manuales en el `README.md`.                                                  |
+| **M02** | Integrante 2           | **Ejercicio 2:** Presentación con CSS y Uso Adaptable       | `css/style.css`                   | Identidad visual (colores, tipografía, botones), maquetación con Flexbox/Grid, adaptabilidad en 320px y 1280px, scroll interno de tablas, foco visible y accesibilidad visual.                                                      |
+| **M03** | Integrante 3           | **Ejercicio 3:** Datos Locales, Catálogo y Filtro           | `js/nucleo/data.js`, `js/modulos/catalogo.js` | Definición de estructuras de datos y objetos iniciales (6 libros, 2 editoriales, 2 géneros, 3 autores, 3 clientes), renderizado del catálogo y lógica del buscador por título (coincidencias parciales, `trim()`, `toLowerCase()`). |
+| **M04** | Integrante 4           | **Ejercicio 4:** Alta de Libros y Clientes                  | `js/modulos/libros.js`, `js/modulos/clientes.js` | Lógica de formularios de alta, poblamiento dinámico de selectores, validación estricta de ISBN único, email válido/único, prevención de envío por defecto (`e.preventDefault()`) y actualización del DOM.                           |
+| **M05** | Integrante 5           | **Ejercicio 5:** Venta Simulada e Historial                 | `js/modulos/ventas.js`, `js/modulos/historial.js` | Selección de cliente, composición de renglones de venta, prevención de libros duplicados en el ticket, cálculo de subtotales/totales (`toFixed(2)`), e inmutabilidad del precio histórico guardado.                                 |
+| **M06** | Integrante 6           | **Ejercicio 6:** Persistencia, Verificación y Documentación | `js/nucleo/storage.js`, `README.md` | Encapsulamiento de lectura/escritura en `localStorage`, recarga sin duplicación de semillas, ejecución y registro comprobable de los 8 casos de prueba manuales en el `README.md`.                                                  |
+| **M07** | Extensión de M02       | **Tema claro/oscuro** (extensión de la consigna)           | `css/tema.css`, `js/modulos/tema.js` | Tema claro/oscuro con preferencia del sistema, persistencia en `tema-preferido` y transición de colores sin parpadeo (FOUC) en la carga.                                                          |
+
+> **M07 es una extensión de la consigna**, no uno de los 6 ejercicios: la aplica el
+> mismo grupo que M02 porque es la parte visual de la interfaz. Los archivos de `js/` se
+> separan **por rol**: `js/nucleo/` guarda lo transversal (semillas, navegación y
+> persistencia) y `js/modulos/` lo que pertenece a una sola responsabilidad.
 
 ---
 
@@ -56,7 +62,7 @@ Para evitar conflictos en Git y garantizar autonomía, cada integrante asume la 
 
 ### Ejercicio 2 — Presentación con CSS y Uso Adaptable (Integrante 2)
 
-- **Archivos:** `style.css`
+- **Archivos:** `css/style.css`
 - **Puntos:** 20 pts.
 - **Requisitos:**
   - Estilos externos reutilizables y coherentes.
@@ -67,7 +73,7 @@ Para evitar conflictos en Git y garantizar autonomía, cada integrante asume la 
 
 ### Ejercicio 3 — Datos Locales, Catálogo y Filtro (Integrante 3)
 
-- **Archivos:** `js/data.js`, `js/catalogo.js`
+- **Archivos:** `js/nucleo/data.js`, `js/modulos/catalogo.js`
 - **Puntos:** 15 pts.
 - **Requisitos:**
   - Definición de arrays/objetos semilla con IDs estables (6 libros, 2 editoriales, 2 géneros, 3 autores, 3 clientes).
@@ -77,7 +83,7 @@ Para evitar conflictos en Git y garantizar autonomía, cada integrante asume la 
 
 ### Ejercicio 4 — Alta de Libros y Clientes (Integrante 4)
 
-- **Archivos:** `js/libros.js`, `js/clientes.js`
+- **Archivos:** `js/modulos/libros.js`, `js/modulos/clientes.js`
 - **Puntos:** 15 pts.
 - **Requisitos:**
   - **Libros:** Título e ISBN no vacíos; ISBN único (sin guiones/espacios); precio > 0; editorial y al menos 1 autor seleccionados; género opcional.
@@ -86,7 +92,7 @@ Para evitar conflictos en Git y garantizar autonomía, cada integrante asume la 
 
 ### Ejercicio 5 — Venta Simulada e Historial (Integrante 5)
 
-- **Archivos:** `js/ventas.js`, `js/historial.js`
+- **Archivos:** `js/modulos/ventas.js`, `js/modulos/historial.js`
 - **Puntos:** 20 pts.
 - **Requisitos:**
   - Composición de renglones (cliente + libro + cantidad > 0).
@@ -96,7 +102,7 @@ Para evitar conflictos en Git y garantizar autonomía, cada integrante asume la 
 
 ### Ejercicio 6 — Persistencia, Verificación y Documentación (Integrante 6)
 
-- **Archivos:** `js/storage.js`, `README.md`
+- **Archivos:** `js/nucleo/storage.js`, `README.md`
 - **Puntos:** 10 pts.
 - **Requisitos:**
   - Manejo de `localStorage`: Carga inicial de semillas sin duplicar registros al recargar.
@@ -151,6 +157,10 @@ Cada módulo alimenta una capability en `openspec/specs/<capability>/spec.md`:
 | **M04** | Integrante 4 | `04-formularios-altas`      |
 | **M05** | Integrante 5 | `05-ventas-e-historial`     |
 | **M06** | Integrante 6 | `06-persistencia-y-pruebas` |
+| **M07** | Extensión de M02 | `07-tema-claro-oscuro`  |
+
+> La reorganización de la estructura del repositorio **no crea una capability nueva**:
+> es un cambio transversal de carpetas y rutas, no un módulo del equipo.
 
 ### Comandos disponibles (OpenCode)
 
@@ -192,14 +202,14 @@ CLI de consulta: `openspec list`, `openspec status --change <nombre>`, `openspec
 
 - **Orden de trabajo (lineal y acumulativo):**
 
-  | Orden | Módulo  | Entregable                        | Depende de                      |
-  | ----- | ------- | --------------------------------- | ------------------------------- |
-  | 1     | **M01** | `index.html` con las 5 vistas     | —                               |
-  | 2     | **M02** | `css/*.css`                       | M01 (necesita los contenedores) |
-  | 3     | **M03** | `js/data.js`, `js/catalogo.js`    | M01 (ids del DOM)               |
-  | 4     | **M04** | `js/libros.js`, `js/clientes.js`  | M03 (semillas y arrays)         |
-  | 5     | **M05** | `js/ventas.js`, `js/historial.js` | M03 + M04                       |
-  | 6     | **M06** | `js/storage.js`, `README.md`      | M03–M05                         |
+  | Orden | Módulo  | Entregable                                          | Depende de                      |
+  | ----- | ------- | --------------------------------------------------- | ------------------------------- |
+  | 1     | **M01** | `index.html` con las 5 vistas                       | —                               |
+  | 2     | **M02** | `css/style.css`, `css/tema.css`                    | M01 (necesita los contenedores) |
+  | 3     | **M03** | `js/nucleo/data.js`, `js/modulos/catalogo.js`      | M01 (ids del DOM)               |
+  | 4     | **M04** | `js/modulos/libros.js`, `js/modulos/clientes.js`    | M03 (semillas y arrays)         |
+  | 5     | **M05** | `js/modulos/ventas.js`, `js/modulos/historial.js`   | M03 + M04                       |
+  | 6     | **M06** | `js/nucleo/storage.js`, `README.md`                | M03–M05                         |
 
   Cada integrante **no arranca hasta que el anterior esté cerrado** (`/opsx-archive` + push en `main`). Si hace falta adelantar trabajo, se avisa al equipo, pero nunca se toca el mismo archivo que otro en simultáneo.
 

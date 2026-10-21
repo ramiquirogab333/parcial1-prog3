@@ -20,7 +20,7 @@ La app es estática: alcanza con abrir `index.html` en un navegador moderno.
 | --- | --- | --- |
 | Archivo local | Doble clic en `index.html` | `file:///.../index.html` |
 | Servidor local de la consigna | `docker compose up -d --build` | `http://localhost:8080` |
-| Despliegue | Ver `DEPLOY.md` (nginx + EasyPanel) | dominio configurado |
+| Despliegue | Ver `docs/DEPLOY.md` (nginx + EasyPanel) | dominio configurado |
 
 > **Importante:** cada una de estas tres formas es un **origen distinto** para el
 > navegador y, por lo tanto, un almacén de datos distinto. Ver la sección 4.
@@ -32,25 +32,47 @@ La app es estática: alcanza con abrir `index.html` en un navegador moderno.
 ```
 .
 ├── index.html          # Maquetado de las 5 vistas (M01)
-├── style.css           # Estilos y adaptabilidad (M02)
-├── tema.css            # Estilos del tema claro/oscuro (M07)
+├── css/
+│   ├── style.css       # Estilos y adaptabilidad (M02)
+│   └── tema.css        # Estilos del tema claro/oscuro (M07)
 ├── js/
-│   ├── tema.js         # Tema claro/oscuro y preferencia guardada (M07)
-│   ├── data.js         # Semillas: 6 libros, 2 editoriales, 2 géneros, 3 autores, 3 clientes (M03)
-│   ├── catalogo.js     # Render del catálogo y buscador por título (M03)
-│   ├── navegacion.js   # Cambio de vista a una sola vez (M03)
-│   ├── libros.js       # Alta de libros y validación (M04)
-│   ├── clientes.js     # Alta de clientes y validación (M04)
-│   ├── ventas.js       # Ticket y confirmación de venta (M05)
-│   ├── historial.js    # Historial de ventas con detalle desplegable (M05)
-│   └── storage.js      # Persistencia en localStorage (M06)
+│   ├── nucleo/         # Scripts transversales: los usa más de un módulo
+│   │   ├── data.js     # Semillas: 6 libros, 2 editoriales, 2 géneros, 3 autores, 3 clientes (M03)
+│   │   ├── navegacion.js # Cambio de vista a una sola vez (M03)
+│   │   └── storage.js  # Persistencia en localStorage (M06)
+│   └── modulos/        # Scripts de un módulo cada uno
+│       ├── tema.js     # Tema claro/oscuro y preferencia guardada (M07)
+│       ├── catalogo.js # Render del catálogo y buscador por título (M03)
+│       ├── libros.js   # Alta de libros y validación (M04)
+│       ├── clientes.js # Alta de clientes y validación (M04)
+│       ├── ventas.js   # Ticket y confirmación de venta (M05)
+│       └── historial.js # Historial de ventas con detalle desplegable (M05)
+├── docs/
+│   └── DEPLOY.md       # Infraestructura de despliegue
 ├── README.md           # Este documento (M06)
-├── DEPLOY.md           # Infraestructura de despliegue
-└── openspec/           # Especificaciones y trazabilidad (OpenSpec)
+├── AGENTS.md           # Reglas del proyecto para el equipo y para los agentes (M06)
+├── CLAUDE.md           # Alias de AGENTS.md para otros asistentes (M06)
+├── Dockerfile          # Imagen del sitio: nginx alpine + los archivos estáticos
+├── nginx.conf          # Gzip, cabeceras de seguridad, caché no-cache y try_files
+├── docker-compose.yml  # Prueba local en http://localhost:8080
+├── .dockerignore       # Qué queda fuera del contexto de build de la imagen
+├── .gitignore          # Qué queda fuera del control de versiones
+├── .gitattributes       # Normalización de fin de línea
+├── .github/            # Workflow de despliegue (GitHub Actions)
+├── openspec/           # Especificaciones y trazabilidad (OpenSpec)
+└── .opencode/          # Comandos y skills de OpenSpec para los agentes
 ```
 
+La separación de `js/` es **por rol, no por módulo**:
+
+- `js/nucleo/` tiene los scripts que usa **más de un** módulo: las semillas
+  (`data.js`), el cambio de vista (`navegacion.js`) y la persistencia
+  (`storage.js`).
+- `js/modulos/` tiene los scripts de **una sola responsabilidad**: el tema, el
+  catálogo, el alta de libros, el alta de clientes, la venta y el historial.
+
 Las cinco vistas son **Catálogo**, **Libros**, **Clientes**, **Ventas** e **Historial**.
-Se muestran de a una: `js/navegacion.js` alterna el atributo `hidden` de cada
+Se muestran de a una: `js/nucleo/navegacion.js` alterna el atributo `hidden` de cada
 `<section class="vista">` y toma el hash de la URL como estado inicial.
 
 ---
@@ -91,7 +113,7 @@ Estructura real observada en `localStorage` (tras una venta de 2×Rayuela + 1×E
 ```
 
 **Qué NO se guarda:** las editoriales, los géneros y los autores. Son datos de
-referencia fijos que ninguna vista modifica, así que se mantienen en `js/data.js` y no
+referencia fijos que ninguna vista modifica, así que se mantienen en `js/nucleo/data.js` y no
 ocupan espacio ni se duplican. Cada libro y cada cliente guardan el **id** de su
 editorial, género y autores, no el texto.
 
@@ -113,7 +135,7 @@ preferencias de la interfaz**.
 - **Restauración en el lugar.** Los datos recuperados se escriben sobre los arrays vivos
   (`Datos.libros`, `Datos.clientes`, `Datos.ventas`) sin reasignar la referencia, para
   que los módulos que ya los tienen sigan viendo los mismos objetos.
-- **Escritura reactiva.** `js/storage.js` escucha el evento `datos-actualizados` que
+- **Escritura reactiva.** `js/nucleo/storage.js` escucha el evento `datos-actualizados` que
   emiten M04 y M05 y vuelve a guardar las tres colecciones. No hace falta que cada vista
   llame a la persistencia.
 - **Precio histórico inmutable.** Al confirmar una venta se copia el **valor** del
@@ -132,7 +154,7 @@ preferencias de la interfaz**.
 
 ### 3.3 API pública del módulo
 
-`js/storage.js` expone el namespace `Almacenamiento`:
+`js/nucleo/storage.js` expone el namespace `Almacenamiento`:
 
 | Método | Qué hace |
 | --- | --- |
@@ -203,6 +225,51 @@ Método por caso:
 
 Total: **13 casos y 99 pasos verificados**, todos en verde y **sin errores de consola**
 (0 excepciones y 0 `console.error` durante toda la corrida).
+
+### 5.1 Verificación de la reorganización de la estructura del repositorio
+
+La reorganización de carpetas (`css/`, `js/nucleo/`, `js/modulos/`, `docs/`) **no
+cambia el comportamiento de la aplicación**, así que se verificó exactamente eso: que
+la app siga funcionando igual antes y después de mover los archivos.
+
+**Cómo se hizo:** el arnés quedó **fuera del repositorio** (en una carpeta temporal),
+sirve una **copia** del proyecto con un servidor estático y maneja Chrome headless por
+el **DevTools Protocol** (Node.js, sin dependencias). Se corrió **dos veces** con el
+mismo arnés: una sobre la estructura vieja (**línea base**) y otra sobre la nueva.
+Ninguna de las dos copias tocó el repositorio ni el `localStorage` del navegador de
+desarrollo.
+
+| #    | Comprobación                                                                                      | Antes del cambio | Después del cambio |
+| ---- | -------------------------------------------------------------------------------------------------- | ---------------- | ------------------ |
+| C01  | Requests HTTP con status >= 400                                                                    | 0                | 0                  |
+| C02  | Excepciones y `console.error`                                                                     | 0                | 0                  |
+| C03  | Catálogo: 6 libros renderizados, sin mensaje de vacío ni de error                                  | aprobado         | aprobado           |
+| C04  | Buscador: parcial insensible a mayúsculas, vacío = todo, inexistente = mensaje                     | aprobado         | aprobado           |
+| C05  | Navegación: las 5 vistas se muestran de a una por hash                                             | aprobado         | aprobado           |
+| C06  | Tema: alterna claro/oscuro y persiste tras recargar                                                | aprobado         | aprobado           |
+| C07  | Alta de libro: ISBN duplicado rechazado, ISBN nuevo aceptado y visible                             | aprobado         | aprobado           |
+| C08  | Alta de cliente: email inválido y duplicado rechazados, email nuevo aceptado                        | aprobado         | aprobado           |
+| C09  | Venta: rechazos (sin cliente, cantidades inválidas, duplicado) y venta válida 3000 + 2000 = 5000    | aprobado         | aprobado           |
+| C10  | Historial: muestra la venta con su detalle desplegado                                              | aprobado         | aprobado           |
+| C11  | CP-06: el precio del catálogo cambia, la venta guardada no                                         | aprobado         | aprobado           |
+| C12  | Recarga: los datos vuelven sin duplicar semillas ni ventas                                         | aprobado         | aprobado           |
+
+**Resultado: 12 de 12 comprobaciones aprobadas en las dos corridas, 0 errores de
+consola y 0 requests fallidos.** En la corrida posterior al cambio, el navegador pidió
+los 11 assets **por sus rutas nuevas** (`/css/style.css`, `/css/tema.css`,
+`/js/nucleo/...`, `/js/modulos/...`) y todas respondieron 200.
+
+**Smoke test del CI (verificado contra la imagen real, no en teoría):**
+
+- `docker build` de la imagen: entran `index.html` y los 11 assets, y **no entra ningún
+  `.md`** (tampoco `docs/DEPLOY.md`, que antes quedaba en la imagen).
+- El paso «Smoke test» del workflow se ejecutó **tal cual** contra el contenedor: `GET /`
+  devuelve el sitio y **las 11 rutas de assets responden 200** → el paso termina con
+  `exit 0`.
+- Con una ruta inexistente, el paso emite `::error::No se pudo cargar el asset <ruta>` y
+  **termina con `exit 1`**: un asset roto frena el deploy.
+- El paso de cobertura compara la lista de assets del smoke test con las rutas `src`/`href`
+  locales de `index.html`; si difieren (una omisión o un duplicado), el job falla.
 
 ---
 
