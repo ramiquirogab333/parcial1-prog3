@@ -1,0 +1,79 @@
+/*
+ * Tema claro / oscuro — botón de íconos y transición.
+ *
+ * Complementa style.css sin modificarlo. El botón #btn-tema apila un sol y una luna:
+ * la luna se ve en el tema claro y el sol en el oscuro (el ícono es el tema al que se pasa).
+ * La transición de colores sólo existe mientras <html> tiene la clase .tema-transicion,
+ * que js/tema.js agrega unos instantes al alternar; así no hay animación al cargar la página.
+ */
+
+.boton-tema {
+  position: relative;
+  width: 2.75rem;
+  padding: 0;
+  border-radius: 50%;
+  color: var(--color-text-main);
+}
+
+.boton-tema__icono {
+  position: absolute;
+  inset: 0;
+  width: 1.375rem;
+  height: 1.375rem;
+  margin: auto;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  transition:
+    opacity 0.4s ease,
+    transform 0.6s cubic-bezier(0.34, 1.4, 0.64, 1);
+}
+
+/* Estado visible: sin giro y a tamaño completo. */
+.boton-tema__icono--luna,
+:root[data-theme="dark"] .boton-tema__icono--sol {
+  opacity: 1;
+  transform: rotate(0deg) scale(1);
+}
+
+/* Estado oculto: girado y reducido, listo para entrar con un giro suave. */
+.boton-tema__icono--sol,
+:root[data-theme="dark"] .boton-tema__icono--luna {
+  opacity: 0;
+  transform: rotate(-90deg) scale(0.4);
+}
+
+/* Cambio manual de tema: los colores se funden en lugar de saltar. */
+:root.tema-transicion,
+:root.tema-transicion *,
+:root.tema-transicion *::before,
+:root.tema-transicion *::after {
+  transition:
+    background-color 0.45s ease,
+    color 0.45s ease,
+    border-color 0.45s ease,
+    box-shadow 0.45s ease,
+    fill 0.45s ease,
+    stroke 0.45s ease;
+}
+
+/* El ícono conserva su propia animación durante la transición de colores. */
+:root.tema-transicion .boton-tema__icono {
+  transition:
+    opacity 0.4s ease,
+    transform 0.6s cubic-bezier(0.34, 1.4, 0.64, 1),
+    stroke 0.45s ease;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .boton-tema__icono,
+  :root.tema-transicion,
+  :root.tema-transicion *,
+  :root.tema-transicion *::before,
+  :root.tema-transicion *::after,
+  :root.tema-transicion .boton-tema__icono {
+    transition: none;
+  }
+}
