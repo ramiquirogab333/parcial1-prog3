@@ -1,10 +1,10 @@
 /*
  * Tema claro / oscuro — botón de íconos y transición.
  *
- * Complementa style.css sin modificarlo. El botón #btn-tema apila un sol y una luna:
+ * Complementa css/style.css sin modificarlo. El botón #btn-tema apila un sol y una luna:
  * la luna se ve en el tema claro y el sol en el oscuro (el ícono es el tema al que se pasa).
  * La transición de colores sólo existe mientras <html> tiene la clase .tema-transicion,
- * que js/tema.js agrega unos instantes al alternar; así no hay animación al cargar la página.
+ * que js/modulos/tema.js agrega unos instantes al alternar; así no hay animación al cargar la página.
  */
 
 .boton-tema {

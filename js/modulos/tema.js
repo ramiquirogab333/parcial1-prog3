@@ -5,7 +5,7 @@
  * el parpadeo (FOUC). La elección manual guardada en localStorage ("tema-preferido") tiene
  * prioridad sobre la preferencia del sistema (prefers-color-scheme). Aplica la clase
  * .dark-mode / .light-mode y el atributo data-theme en <html>, que son los selectores de
- * style.css. El botón (sólo íconos, ver tema.css) se enlaza cuando el DOM está listo; su
+ * css/style.css. El botón (sólo íconos, ver css/tema.css) se enlaza cuando el DOM está listo; su
  * nombre accesible se actualiza con aria-label y title, y el cambio manual activa unos
  * instantes la clase .tema-transicion para fundir los colores.
  *

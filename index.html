@@ -5,11 +5,11 @@
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Librería — Gestión y ventas</title>
 
-    <!-- M02: hojas de estilo — M02 agrega acá sus etiquetas de hoja de estilo locales (css/...), sin recursos externos. -->
-    <link rel="stylesheet" href="style.css" />
+    <!-- M02: hojas de estilo — M02 agrega acá sus etiquetas de hoja de estilo locales (css/style.css y css/tema.css), sin recursos externos. -->
+    <link rel="stylesheet" href="css/style.css" />
     <!-- FIN M02 -->
-    <link rel="stylesheet" href="tema.css" />
-    <script src="js/tema.js"></script>
+    <link rel="stylesheet" href="css/tema.css" />
+    <script src="js/modulos/tema.js"></script>
   </head>
   <body>
     <header id="cabecera">
@@ -376,16 +376,16 @@
       </section>
     </main>
 
-    <!-- M03-M06: scripts de la aplicación — M03 a M06 agregan acá sus etiquetas de script locales (js/...), en orden de dependencia. -->
-    <script src="js/data.js"></script>
-    <script src="js/catalogo.js"></script>
-    <script src="js/navegacion.js"></script>
-    <script src="js/libros.js"></script>
-    <script src="js/clientes.js"></script>
-    <script src="js/ventas.js"></script>
-    <script src="js/historial.js"></script>
-    <!-- M06: persistencia en localStorage — se carga al final porque necesita redibujar las vistas ya inicializadas. -->
-    <script src="js/storage.js"></script>
+    <!-- M03-M06: scripts de la aplicación — M03 a M06 agregan acá sus etiquetas de script locales (js/nucleo/... y js/modulos/...), en orden de dependencia. -->
+    <script src="js/nucleo/data.js"></script>
+    <script src="js/modulos/catalogo.js"></script>
+    <script src="js/nucleo/navegacion.js"></script>
+    <script src="js/modulos/libros.js"></script>
+    <script src="js/modulos/clientes.js"></script>
+    <script src="js/modulos/ventas.js"></script>
+    <script src="js/modulos/historial.js"></script>
+    <!-- M06: persistencia en localStorage (js/nucleo/storage.js) — se carga al final porque necesita redibujar las vistas ya inicializadas. -->
+    <script src="js/nucleo/storage.js"></script>
     <!-- FIN scripts -->
   </body>
 </html>
