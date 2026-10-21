@@ -64,7 +64,7 @@ El sistema SHALL publicar un namespace global único `Datos` con las propiedades
 #### Scenario: Orden de carga de los scripts
 
 - **WHEN** se inspeccionan las etiquetas `<script>` del bloque reservado al final del `body`
-- **THEN** aparecen sólo las tres referencias locales `js/data.js`, `js/catalogo.js` y `js/navegacion.js`, en ese orden, sin `type="module"` ni atributos `async`
+- **THEN** las tres primeras son las referencias locales `js/data.js`, `js/catalogo.js` y `js/navegacion.js`, en ese orden, sin `type="module"` ni atributos `async`, y cualquier script de un módulo posterior aparece a continuación de ellas
 
 ### Requirement: Búsqueda de libros por título
 
