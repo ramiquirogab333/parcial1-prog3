@@ -48,16 +48,59 @@ jobs:
         run: |
           set -euo pipefail
           docker run -d --name smoke -p 8080:80 parcial1-prog3-libreria:ci
+          listo=0
           for i in $(seq 1 15); do
             if curl -fsS http://localhost:8080/ | grep -qi "librer"; then
               echo "OK: nginx sirve index.html"
-              exit 0
+              listo=1
+              break
             fi
             sleep 2
           done
-          echo "::error::El contenedor no devolvió el sitio"
-          docker logs smoke || true
-          exit 1
+          if [ "$listo" -ne 1 ]; then
+            echo "::error::El contenedor no devolvió el sitio"
+            docker logs smoke || true
+            exit 1
+          fi
+          # Cada asset local que referencia index.html tiene que servir 200.
+          for ruta in \
+            /css/style.css \
+            /css/tema.css \
+            /js/nucleo/data.js \
+            /js/modulos/catalogo.js \
+            /js/nucleo/navegacion.js \
+            /js/modulos/libros.js \
+            /js/modulos/clientes.js \
+            /js/modulos/ventas.js \
+            /js/modulos/historial.js \
+            /js/nucleo/storage.js \
+            /js/modulos/tema.js
+          do
+            if ! curl -fsS -o /dev/null "http://localhost:8080${ruta}"; then
+              echo "::error::No se pudo cargar el asset ${ruta}"
+              docker logs smoke || true
+              exit 1
+            fi
+            echo "OK: ${ruta}"
+          done
+          echo "OK: los 11 assets responden"
+
+      - name: El smoke test cubre todos los assets locales de index.html
+        run: |
+          set -euo pipefail
+          esperado="/css/style.css /css/tema.css /js/modulos/catalogo.js /js/modulos/clientes.js /js/modulos/historial.js /js/modulos/libros.js /js/modulos/tema.js /js/modulos/ventas.js /js/nucleo/data.js /js/nucleo/navegacion.js /js/nucleo/storage.js"
+          reales=$(grep -oE '(href|src)="[^"]+"' index.html \
+            | sed -E 's/^(href|src)="//; s/"$//' \
+            | grep -vE '^(https?:|#|mailto:|data:)' \
+            | sed 's|^|/|' \
+            | sort -u | tr '\n' ' ' | sed 's/[[:space:]]*$//')
+          if [ "$reales" != "$esperado" ]; then
+            echo "::error::La lista de assets del smoke test no coincide con index.html"
+            echo "esperado: $esperado"
+            echo "real:     $reales"
+            exit 1
+          fi
+          echo "OK: la lista de assets del smoke test coincide con index.html"
 
       - name: Limpiar contenedor de prueba
         if: always()
