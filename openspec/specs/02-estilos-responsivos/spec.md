@@ -230,7 +230,7 @@ La hoja de estilos SHALL expresar cualquier icono mediante símbolos Unicode nat
 
 ### Requirement: Restricciones técnicas de la capa de estilos
 
-La hoja de estilos MUST ser un archivo CSS nativo único ubicado en la raíz del proyecto, MUST NOT usar frameworks, librerías, preprocesadores ni herramientas de build, y MUST NOT realizar peticiones de red. La capa de estilos MUST NOT depender de JavaScript para funcionar y MUST NOT requerir cambios en el markup ni en las clases publicadas por M01.
+La hoja de estilos MUST ser un archivo CSS nativo único ubicado en el directorio `css/` del proyecto, MUST NOT usar frameworks, librerías, preprocesadores ni herramientas de build, y MUST NOT realizar peticiones de red. La capa de estilos MUST NOT depender de JavaScript para funcionar y MUST NOT requerir cambios en el markup ni en las clases publicadas por M01.
 
 #### Scenario: CSS nativo sin dependencias
 
@@ -246,6 +246,11 @@ La hoja de estilos MUST ser un archivo CSS nativo único ubicado en la raíz del
 
 - **WHEN** se compara el documento con el entregado por M01
 - **THEN** las cinco vistas, los `id` del contrato y todas las clases BEM se conservan sin renombrar ni eliminar
+
+#### Scenario: La hoja de estilos vive en la carpeta de estilos
+
+- **WHEN** se listan los archivos del directorio `css/` del repositorio
+- **THEN** están `style.css` y `tema.css`, y el repositorio no tiene ninguna hoja de estilo en su raíz
 
 ### Requirement: Verificación visual de CP-08 en los anchos de referencia
 

@@ -1,7 +1,7 @@
 # 07-tema-claro-oscuro Specification
 
 ## Purpose
-Define la selección, aplicación y persistencia del tema claro u oscuro: tema inicial sin parpadeo según la elección guardada o la preferencia del sistema, aplicación sobre `<html>` con los selectores de `style.css`, botón accesible en la barra de navegación y seguimiento del sistema mientras no haya elección manual.
+Define la selección, aplicación y persistencia del tema claro u oscuro: tema inicial sin parpadeo según la elección guardada o la preferencia del sistema, aplicación sobre `<html>` con los selectores de `css/style.css`, botón accesible en la barra de navegación y seguimiento del sistema mientras no haya elección manual.
 
 ## Requirements
 
@@ -24,9 +24,14 @@ El sistema SHALL determinar el tema antes del primer pintado, mediante un script
 - **WHEN** `tema-preferido` contiene un valor distinto de `"light"` y `"dark"`
 - **THEN** se ignora y se usa la preferencia del sistema
 
+#### Scenario: El script del tema se carga de forma bloqueante
+
+- **WHEN** se inspecciona el `<head>` del documento principal
+- **THEN** contiene `<script src="js/modulos/tema.js"></script>` sin `defer`, y el tema se aplica antes del primer pintado
+
 ### Requirement: Aplicación del tema
 
-Al aplicar un tema, el sistema SHALL actualizar el elemento `document.documentElement`: alternar las clases `dark-mode` y `light-mode` y establecer el atributo `data-theme` con el valor `"dark"` o `"light"`, de modo que coincidan con los selectores de `style.css`.
+Al aplicar un tema, el sistema SHALL actualizar el elemento `document.documentElement`: alternar las clases `dark-mode` y `light-mode` y establecer el atributo `data-theme` con el valor `"dark"` o `"light"`, de modo que coincidan con los selectores de `css/style.css`.
 
 #### Scenario: Tema oscuro
 

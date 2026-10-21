@@ -124,7 +124,7 @@ Tras un alta correcta de libro, el sistema SHALL redibujar el listado de libros,
 
 ### Requirement: Restricciones técnicas del módulo
 
-`js/libros.js` y `js/clientes.js` MUST usar sólo JavaScript nativo, sin frameworks, librerías, CDN, módulos ES, `fetch` ni `innerHTML` con datos. MUST cargarse con etiquetas `<script src>` locales después de los tres scripts de M03, en el orden `js/libros.js`, `js/clientes.js`.
+`js/modulos/libros.js` y `js/modulos/clientes.js` MUST usar sólo JavaScript nativo, sin frameworks, librerías, CDN, módulos ES, `fetch` ni `innerHTML` con datos. MUST cargarse con etiquetas `<script src>` locales después de los tres scripts de M03, en el orden `js/modulos/libros.js`, `js/modulos/clientes.js`.
 
 #### Scenario: Revisión estática
 

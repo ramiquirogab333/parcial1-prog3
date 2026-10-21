@@ -7,7 +7,7 @@ Define el modelo de datos local de la librería —libros, editoriales, géneros
 
 ### Requirement: Modelo de datos semilla con identificadores estables
 
-El sistema SHALL exponer cinco colecciones de datos locales —libros, editoriales, géneros, autores y clientes— declaradas en `js/data.js`. Cada registro MUST tener un `id` de tipo string, único dentro de su colección y con el prefijo de su entidad (`lib-`, `edi-`, `gen-`, `aut-`, `cli-`). Las colecciones semilla MUST contener al menos 6 libros, 2 editoriales, 2 géneros, 3 autores y 3 clientes ficticios.
+El sistema SHALL exponer cinco colecciones de datos locales —libros, editoriales, géneros, autores y clientes— declaradas en `js/nucleo/data.js`. Cada registro MUST tener un `id` de tipo string, único dentro de su colección y con el prefijo de su entidad (`lib-`, `edi-`, `gen-`, `aut-`, `cli-`). Las colecciones semilla MUST contener al menos 6 libros, 2 editoriales, 2 géneros, 3 autores y 3 clientes ficticios.
 
 #### Scenario: Cantidades mínimas de las semillas
 
@@ -54,7 +54,7 @@ Los registros semilla MUST ser objetos planos: sin funciones, sin instancias de 
 
 ### Requirement: API global de datos
 
-El sistema SHALL publicar un namespace global único `Datos` con las propiedades `libros`, `editoriales`, `generos`, `autores`, `clientes` y la función `buscarLibrosPorTitulo`. El sistema MUST NOT requerir módulos ES, `import`, `export`, `type="module"` ni herramientas de build para consumir la API. `js/data.js` MUST cargarse antes que `js/catalogo.js`.
+El sistema SHALL publicar un namespace global único `Datos` con las propiedades `libros`, `editoriales`, `generos`, `autores`, `clientes` y la función `buscarLibrosPorTitulo`. El sistema MUST NOT requerir módulos ES, `import`, `export`, `type="module"` ni herramientas de build para consumir la API. `js/nucleo/data.js` MUST cargarse antes que `js/modulos/catalogo.js`.
 
 #### Scenario: API disponible desde la consola
 
@@ -64,7 +64,7 @@ El sistema SHALL publicar un namespace global único `Datos` con las propiedades
 #### Scenario: Orden de carga de los scripts
 
 - **WHEN** se inspeccionan las etiquetas `<script>` del bloque reservado al final del `body`
-- **THEN** las tres primeras son las referencias locales `js/data.js`, `js/catalogo.js` y `js/navegacion.js`, en ese orden, sin `type="module"` ni atributos `async`, y cualquier script de un módulo posterior aparece a continuación de ellas
+- **THEN** las tres primeras son las referencias locales `js/nucleo/data.js`, `js/modulos/catalogo.js` y `js/nucleo/navegacion.js`, en ese orden, sin `type="module"` ni atributos `async`, y cualquier script de un módulo posterior aparece a continuación de ellas
 
 ### Requirement: Búsqueda de libros por título
 
@@ -115,7 +115,7 @@ El sistema SHALL publicar un namespace global único `Datos` con las propiedades
 
 #### Scenario: Inserción segura de datos
 
-- **WHEN** se busca en el código de `js/catalogo.js` la palabra `innerHTML`
+- **WHEN** se busca en el código de `js/modulos/catalogo.js` la palabra `innerHTML`
 - **THEN** no aparece ninguna ocurrencia
 
 #### Scenario: Re-render solicitado por otro módulo
@@ -238,7 +238,7 @@ El sistema SHALL publicar `Navegacion.mostrarVista(idVista)` para que otros mód
 
 ### Requirement: Restricciones técnicas del módulo
 
-El código del módulo MUST ser JavaScript nativo sin frameworks, librerías, CDN, gestores de paquetes, herramientas de build ni peticiones de red. MUST NOT contener `fetch`, `XMLHttpRequest` ni URLs absolutas. Los nombres de funciones, variables y textos de la interfaz MUST estar en español. El módulo MUST limitarse a crear `js/data.js`, `js/catalogo.js` y `js/navegacion.js`, y a agregar sus tres etiquetas `<script src>` en el bloque reservado de `index.html`.
+El código del módulo MUST ser JavaScript nativo sin frameworks, librerías, CDN, gestores de paquetes, herramientas de build ni peticiones de red. MUST NOT contener `fetch`, `XMLHttpRequest` ni URLs absolutas. Los nombres de funciones, variables y textos de la interfaz MUST estar en español. El módulo MUST limitarse a crear `js/nucleo/data.js`, `js/modulos/catalogo.js` y `js/nucleo/navegacion.js`, y a agregar sus tres etiquetas `<script src>` en el bloque reservado de `index.html`.
 
 #### Scenario: Sin recursos ni peticiones de red
 
