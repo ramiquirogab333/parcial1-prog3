@@ -271,6 +271,18 @@ los 11 assets **por sus rutas nuevas** (`/css/style.css`, `/css/tema.css`,
 - El paso de cobertura compara la lista de assets del smoke test con las rutas `src`/`href`
   locales de `index.html`; si difieren (una omisión o un duplicado), el job falla.
 
+**Corrida real del pipeline (no una reproducción local):** el `push` a `main` disparó el
+workflow «Deploy a la VPS» (run `39641329934`), que terminó en **success**:
+
+| Job | Resultado | Pasos clave |
+| --- | --- | --- |
+| Verificar imagen Docker | success | build de la imagen, smoke test de los 11 assets y paso de cobertura, los tres en verde |
+| Desplegar en EasyPanel | success | webhook de deploy disparado con respuesta 2xx |
+
+O sea: el blindaje del CI quedó comprobado **en el runner de GitHub**, no sólo contra un
+contenedor local. A partir de ese push, un asset roto frena el deploy antes de llegar a
+producción.
+
 ---
 
 ## 6. Registro de las ocho comprobaciones manuales
@@ -501,8 +513,31 @@ persistencia ante situaciones anómalas. También se ejecutaron.
 
 ## 9. Trazabilidad
 
+### 9.1 Módulo de persistencia (M06)
+
 La especificación de este módulo vive en
 `openspec/changes/archive/2026-10-21-m06-persistencia-y-pruebas/` (propuesta, diseño,
 tareas y especificación) y, ya archivada, en
 `openspec/specs/06-persistencia-y-pruebas/spec.md`. Cada requisito de la consigna del
 Ejercicio 6 está mapeado a un requisito verificable de esa especificación.
+
+### 9.2 Organización del repositorio
+
+La reorganización de carpetas está especificada en el change
+`openspec/changes/archive/2026-10-21-reorganizacion-estructura-repo/` (propuesta,
+diseño, 37 tareas y los cinco delta specs) y, ya sincronizada, en la capability
+`openspec/specs/08-organizacion-repositorio/spec.md`. Esa capability fija:
+
+- las carpetas `css/`, `js/nucleo/`, `js/modulos/` y `docs/`, y qué va en cada una;
+- los archivos que **deben permanecer en la raíz** (`index.html`, `Dockerfile`,
+  `nginx.conf`, `docker-compose.yml`, `.dockerignore`);
+- el **orden de carga** de los scripts, que no es libre: `data.js` antes que
+  `catalogo.js`, `storage.js` al último y `tema.js` bloqueante en el `<head>`;
+- la verificación de **cada asset** en el pipeline y la exclusión de la documentación de
+  la imagen publicada;
+- la inmutabilidad de `openspec/changes/archive/`, que es el registro histórico.
+
+Los cambios de rutas que esas specs nombraban están trazados además en las specs
+sincronizadas de `02-estilos-responsivos`, `03-modelo-datos-catalogo`,
+`04-formularios-altas` y `07-tema-claro-oscuro`.
+
