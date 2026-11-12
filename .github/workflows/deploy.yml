@@ -47,8 +47,11 @@ jobs:
       - name: Smoke test (el sitio tiene que responder)
         run: |
           set -euo pipefail
+          # En CI no hay backend ni host.docker.internal: se usa 127.0.0.1 solo
+          # para que nginx pueda resolver el upstream y arrancar. El smoke test
+          # no llama a /api, solo verifica el sitio y los assets.
           docker run -d --name smoke -p 8080:80 \
-            -e API_UPSTREAM=host.docker.internal:8000 \
+            -e API_UPSTREAM=127.0.0.1:8000 \
             parcial1-prog3-libreria:ci
           listo=0
           for i in $(seq 1 15); do
