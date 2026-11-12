@@ -108,6 +108,7 @@
               <thead>
                 <tr>
                   <th scope="col">Título</th>
+                  <th scope="col">ISBN</th>
                   <th scope="col">Autor/es</th>
                   <th scope="col">Editorial</th>
                   <th scope="col">Género</th>
@@ -116,6 +117,15 @@
               </thead>
               <tbody id="cuerpo-tabla-catalogo"></tbody>
             </table>
+          </div>
+          <div class="paginacion">
+            <button type="button" id="btn-catalogo-anterior" class="boton" disabled>
+              Anterior
+            </button>
+            <span id="pagina-catalogo" role="status" aria-live="polite">Página 1</span>
+            <button type="button" id="btn-catalogo-siguiente" class="boton" disabled>
+              Siguiente
+            </button>
           </div>
           <p
             id="mensaje-catalogo-vacio"
