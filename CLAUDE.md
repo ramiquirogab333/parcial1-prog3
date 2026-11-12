@@ -1,3 +1,7 @@
+> **⚠️ TP GLOBAL — LEER PRIMERO**
+> Para el TP Global, leer **`GLOBAL-CLAUDE.md`**, **`GLOBAL-AGENTS.md`** y **`GLOBAL-CHANGE.md`**.
+> Este archivo es la plantilla del Parcial 1 y no describe la integración con la API.
+
 # Plantilla reutilizable de prompts
 
 Reemplazá los campos entre `{{dobles llaves}}` antes de usar este prompt. Si un dato todavía no está definido, conservá su placeholder y marcalo como pendiente. Eliminá las filas opcionales que no correspondan.

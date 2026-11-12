@@ -1,3 +1,8 @@
+> **⚠️ TP GLOBAL — LEER PRIMERO**
+> Este archivo es del **Parcial 1** y prohíbe `fetch`/APIs.
+> Para el TP Global, la guía vigente es **`GLOBAL-AGENTS.md`** y el plan es **`GLOBAL-CHANGE.md`**.
+> La prohibición de `fetch` **no aplica** al Global.
+
 # Configuración y Directivas del Agente IA (AGENTS.md)
 
 Este documento define la arquitectura, las directivas operativas, el flujo de desarrollo basado en **Specification-Driven Development (SDD)** con **OpenSpec**, y la distribución modular para un equipo de 6 integrantes en base a la consigna del Parcial 1 de Programación III (UTN).
