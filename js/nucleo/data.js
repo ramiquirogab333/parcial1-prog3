@@ -1,92 +1,24 @@
 /**
- * M03 — Datos locales de la librería.
+ * M03 — Datos de la librería (adaptado en el Global · Paso 1).
  *
- * Semillas estáticas de editoriales, géneros, autores, libros y clientes, y búsqueda
- * de libros por título. Los registros son objetos planos y serializables: M06 los
- * persiste en localStorage tal cual y M04/M05 los consumen sin transformarlos.
+ * Contenedor en memoria de editoriales, géneros, autores, libros, clientes y ventas, y
+ * búsqueda de libros por título. Arranca vacío a propósito: api.js lo llena con lo que
+ * devuelve la API al cargar la página. No hay datos de ejemplo de respaldo: si la API
+ * falla, el error se ve en lugar de quedar escondido detrás de registros inventados.
+ *
+ * Los registros son objetos planos con IDs de texto (api.js normaliza los IDs numéricos
+ * de la API) para que los módulos los consuman sin transformarlos.
  *
  * Namespace público: Datos (ver design.md de m03-modelo-datos-catalogo).
  */
 
 var Datos = {
-  editoriales: [
-    { id: "edi-01", nombre: "Sudamericana" },
-    { id: "edi-02", nombre: "Emecé" }
-  ],
-
-  generos: [
-    { id: "gen-01", nombre: "Narrativa" },
-    { id: "gen-02", nombre: "Ensayo" }
-  ],
-
-  autores: [
-    { id: "aut-01", nombre: "Julio Cortázar" },
-    { id: "aut-02", nombre: "Ernesto Sabato" },
-    { id: "aut-03", nombre: "Jorge Luis Borges" }
-  ],
-
-  libros: [
-    {
-      id: "lib-01",
-      titulo: "Rayuela",
-      isbn: "9788437604572",
-      precio: 1500,
-      editorialId: "edi-01",
-      generoId: "gen-01",
-      autorIds: ["aut-01"]
-    },
-    {
-      id: "lib-02",
-      titulo: "El túnel",
-      isbn: "9789507312274",
-      precio: 2000,
-      editorialId: "edi-01",
-      generoId: "gen-01",
-      autorIds: ["aut-02"]
-    },
-    {
-      id: "lib-03",
-      titulo: "Ficciones",
-      isbn: "9788420633126",
-      precio: 2500.5,
-      editorialId: "edi-02",
-      generoId: "gen-01",
-      autorIds: ["aut-03"]
-    },
-    {
-      id: "lib-04",
-      titulo: "Sobre héroes y tumbas",
-      isbn: "9789507312694",
-      precio: 1800,
-      editorialId: "edi-01",
-      generoId: null,
-      autorIds: ["aut-02"]
-    },
-    {
-      id: "lib-05",
-      titulo: "Historia de la eternidad",
-      isbn: "9789507312038",
-      precio: 1200,
-      editorialId: "edi-02",
-      generoId: "gen-02",
-      autorIds: ["aut-03"]
-    },
-    {
-      id: "lib-06",
-      titulo: "Antología del cuento argentino",
-      isbn: "9789507312885",
-      precio: 3100.75,
-      editorialId: "edi-02",
-      generoId: "gen-01",
-      autorIds: ["aut-01", "aut-02"]
-    }
-  ],
-
-  clientes: [
-    { id: "cli-01", nombre: "Ana María Gómez", email: "ana.gomez@example.com" },
-    { id: "cli-02", nombre: "Bruno Pérez", email: "bruno.perez@example.com" },
-    { id: "cli-03", nombre: "Carla Fernández", email: "carla.fernandez@example.com" }
-  ]
+  editoriales: [],
+  generos: [],
+  autores: [],
+  libros: [],
+  clientes: [],
+  ventas: []
 };
 
 /**

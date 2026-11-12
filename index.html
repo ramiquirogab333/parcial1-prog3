@@ -384,8 +384,8 @@
     <script src="js/modulos/clientes.js"></script>
     <script src="js/modulos/ventas.js"></script>
     <script src="js/modulos/historial.js"></script>
-    <!-- M06: persistencia en localStorage (js/nucleo/storage.js) — se carga al final porque necesita redibujar las vistas ya inicializadas. -->
-    <script src="js/nucleo/storage.js"></script>
+    <!-- Global · Paso 1: cliente HTTP de la API (js/nucleo/api.js) — se carga al final porque, al recibir los datos, redibuja las vistas ya inicializadas. -->
+    <script src="js/nucleo/api.js"></script>
     <!-- FIN scripts -->
   </body>
 </html>

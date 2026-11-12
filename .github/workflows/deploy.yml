@@ -78,7 +78,7 @@ jobs:
             /js/modulos/clientes.js \
             /js/modulos/ventas.js \
             /js/modulos/historial.js \
-            /js/nucleo/storage.js \
+            /js/nucleo/api.js \
             /js/modulos/tema.js
           do
             if ! curl -fsS -o /dev/null "http://localhost:8080${ruta}"; then
@@ -93,7 +93,7 @@ jobs:
       - name: El smoke test cubre todos los assets locales de index.html
         run: |
           set -euo pipefail
-          esperado="/css/style.css /css/tema.css /js/modulos/catalogo.js /js/modulos/clientes.js /js/modulos/historial.js /js/modulos/libros.js /js/modulos/tema.js /js/modulos/ventas.js /js/nucleo/data.js /js/nucleo/navegacion.js /js/nucleo/storage.js"
+          esperado="/css/style.css /css/tema.css /js/modulos/catalogo.js /js/modulos/clientes.js /js/modulos/historial.js /js/modulos/libros.js /js/modulos/tema.js /js/modulos/ventas.js /js/nucleo/api.js /js/nucleo/data.js /js/nucleo/navegacion.js"
           reales=$(grep -oE '(href|src)="[^"]+"' index.html \
             | sed -E 's/^(href|src)="//; s/"$//' \
             | grep -vE '^(https?:|#|mailto:|data:)' \
