@@ -47,7 +47,9 @@ jobs:
       - name: Smoke test (el sitio tiene que responder)
         run: |
           set -euo pipefail
-          docker run -d --name smoke -p 8080:80 parcial1-prog3-libreria:ci
+          docker run -d --name smoke -p 8080:80 \
+            -e API_UPSTREAM=host.docker.internal:8000 \
+            parcial1-prog3-libreria:ci
           listo=0
           for i in $(seq 1 15); do
             if curl -fsS http://localhost:8080/ | grep -qi "librer"; then

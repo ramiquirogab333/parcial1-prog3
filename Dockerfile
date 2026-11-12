@@ -1,34 +1,29 @@
 # ---------------------------------------------------------------------------
 # Imagen de despliegue del frontend de la Librería (Programación III - UTN)
 #
-# El proyecto es 100% estático: no hay build, ni npm, ni backend. Por eso la
-# imagen no compila nada: arma la carpeta pública y la sirve nginx.
-# Los módulos M02–M06 (css/, js/) se publican solos al estar en el contexto,
-# sin necesidad de tocar este archivo.
+# El proyecto es 100% estático: no hay build, ni npm, ni backend. La imagen no
+# compila nada: copia el sitio y lo sirve con nginx.
+#
+# La conexión con la API se resuelve con nginx: el front llama a /api/... y
+# nginx lo reenvía al backend usando la variable API_UPSTREAM.
 # ---------------------------------------------------------------------------
 
-# Etapa 1: arma el sitio público.
-# Se usa la misma imagen base para no descargar una extra y reusar capas.
-FROM nginx:stable-alpine AS sitio
-WORKDIR /sitio
-COPY . .
-# La config del servidor viaja en el contexto (la necesita la etapa 2) pero no
-# debe quedar accesible como archivo estático del sitio.
-RUN rm -f nginx.conf
+FROM nginx:1.30-alpine
 
-# Etapa 2: servidor final. No incluye nada de la etapa 1 salvo la carpeta del sitio.
-FROM nginx:stable-alpine
+# Solo se sustituye ${API_UPSTREAM} en la plantilla; el resto de las variables
+# de nginx ($uri, $host, etc.) quedan intactas.
+ENV NGINX_ENVSUBST_FILTER=^API_UPSTREAM$
 
-LABEL org.opencontainers.image.title="parcial1-prog3-libreria" \
-      org.opencontainers.image.description="Frontend estático de la Librería (HTML, CSS y JS nativos)" \
-      org.opencontainers.image.licenses="MIT"
+# Sitio estático. Se copian explícitamente las carpetas públicas para que no
+# entren al contenedor la configuración, la documentación ni los archivos de
+# OpenSpec.
+COPY index.html /usr/share/nginx/html/
+COPY css/ /usr/share/nginx/html/css/
+COPY js/ /usr/share/nginx/html/js/
 
-# Configuración propia del servidor: gzip, cabeceras de seguridad y
-# comportamiento de caché pensado para un sitio que se redespliega seguido.
-COPY nginx.conf /etc/nginx/conf.d/default.conf
-
-# Sitio estático. Qué entra y qué no lo define .dockerignore.
-COPY --from=sitio /sitio/ /usr/share/nginx/html/
+# Plantilla del proxy: el entrypoint de nginx la procesa al arrancar y genera
+# /etc/nginx/conf.d/default.conf con el valor real de API_UPSTREAM.
+COPY default.conf.template /etc/nginx/templates/default.conf.template
 
 EXPOSE 80
 

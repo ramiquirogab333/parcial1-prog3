@@ -11,6 +11,12 @@ services:
     container_name: parcial1-prog3-libreria
     ports:
       - "8080:80"
+    environment:
+      # Host:puerto del backend. Sin http:// y sin barra final.
+      # Con Docker Desktop apunta al backend que corre en tu máquina.
+      API_UPSTREAM: host.docker.internal:8000
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
     restart: unless-stopped
     healthcheck:
       test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://127.0.0.1/"]
