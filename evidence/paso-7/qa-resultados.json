@@ -1,0 +1,1213 @@
+{
+  "base": "https://libreria.francogagliardi.me",
+  "startedAt": "2026-11-13T16:40:29.314Z",
+  "finishedAt": "2026-11-13T16:40:58.648Z",
+  "estado": "completado",
+  "baseline": {
+    "libros": 4,
+    "clientes": 3,
+    "ventas": 3,
+    "titulos": [
+      "Rayuela",
+      "Ficciones",
+      "Los que aman, odian",
+      "Respiración artificial"
+    ],
+    "isbn": [
+      "978-950-07-0001-1",
+      "978-950-00-0007-3",
+      "978-950-00-0006-6",
+      "978-950-07-0002-8"
+    ],
+    "precios": [
+      "25000.00",
+      "28500.50",
+      "21000.00",
+      "27000.00"
+    ],
+    "emails": [
+      "ana@example.com",
+      "tomas@example.com",
+      "qa.paso7@example.com"
+    ],
+    "ventaIds": [
+      "1",
+      "4",
+      "5"
+    ]
+  },
+  "creado": {
+    "cliente": {
+      "id": "4",
+      "nombre": "QA Prueba Paso 7",
+      "email": "qa.paso7@example.com",
+      "reutilizado": true
+    },
+    "venta": {
+      "id": "5",
+      "reutilizada": true
+    }
+  },
+  "pasos": [
+    {
+      "id": "CP-01",
+      "nombre": "Búsqueda por título: mayúsculas, espacios, vacía e inexistente",
+      "inicio": "2026-11-13T16:40:32.615Z",
+      "checks": [
+        {
+          "descripcion": "Buscar «RAYU» en mayúsculas",
+          "esperado": "1 resultado(s)",
+          "observado": "1 resultado(s)",
+          "ok": true
+        },
+        {
+          "descripcion": "Los resultados contienen «rayu» en el título",
+          "esperado": "todos",
+          "observado": "[\"Rayuela\"]",
+          "ok": true
+        },
+        {
+          "descripcion": "Buscar «  rayu  » (espacios + minúsculas)",
+          "esperado": "mismos resultados que «RAYU»",
+          "observado": "1 resultado(s)",
+          "ok": true
+        },
+        {
+          "descripcion": "Búsqueda vacía",
+          "esperado": "4 libros",
+          "observado": "4 libros",
+          "ok": true
+        },
+        {
+          "descripcion": "Aviso de «sin resultados» con búsqueda vacía",
+          "esperado": "vacío",
+          "observado": "(vacío)",
+          "ok": true
+        },
+        {
+          "descripcion": "Texto inexistente",
+          "esperado": "0 filas",
+          "observado": "0 filas",
+          "ok": true
+        },
+        {
+          "descripcion": "Aviso de «sin resultados» visible",
+          "esperado": "con texto",
+          "observado": "No se encontraron libros cuyo título coincida con la búsqueda.",
+          "ok": true
+        },
+        {
+          "descripcion": "Peticiones de búsqueda a /api/libros/ con «titulo»",
+          "esperado": ">= 3",
+          "observado": "3",
+          "ok": true
+        }
+      ],
+      "notas": [],
+      "capturas": [
+        "capturas/02-catalogo-sin-resultados.png",
+        "capturas/01-catalogo.png"
+      ],
+      "error": null
+    },
+    {
+      "id": "CP-01b",
+      "nombre": "Paginación del catálogo",
+      "inicio": "2026-11-13T16:40:36.387Z",
+      "checks": [
+        {
+          "descripcion": "Página inicial",
+          "esperado": "Página 1",
+          "observado": "Página 1",
+          "ok": true
+        },
+        {
+          "descripcion": "Botón «Anterior» deshabilitado en la primera página",
+          "esperado": "deshabilitado",
+          "observado": "deshabilitado",
+          "ok": true
+        },
+        {
+          "descripcion": "Botón «Siguiente» con menos de 20 libros",
+          "esperado": "deshabilitado",
+          "observado": "deshabilitado",
+          "ok": true
+        }
+      ],
+      "notas": [
+        "No hay segunda página: la API devolvió 4 libros para limit=20, así que no se pudo probar el cambio de offset. Queda como no probado."
+      ],
+      "capturas": [],
+      "error": null
+    },
+    {
+      "id": "CP-02",
+      "nombre": "Alta de libro: ISBN existente",
+      "inicio": "2026-11-13T16:40:36.720Z",
+      "checks": [
+        {
+          "descripcion": "ISBN existente («978-950-07-0001-1»)",
+          "esperado": "rechazado con mensaje",
+          "observado": "No se pudo dar de alta el libro: Ya existe un libro con ese ISBN",
+          "ok": true
+        },
+        {
+          "descripcion": "Respuesta del servidor para el ISBN repetido",
+          "esperado": "409",
+          "observado": "409",
+          "ok": true
+        },
+        {
+          "descripcion": "Cantidad de libros tras el rechazo",
+          "esperado": "4",
+          "observado": "4",
+          "ok": true
+        }
+      ],
+      "notas": [
+        "No se probó el alta con ISBN nuevo: esta corrida tenía prohibido crear libros."
+      ],
+      "capturas": [
+        "capturas/03-cp02-isbn-duplicado.png"
+      ],
+      "error": null
+    },
+    {
+      "id": "CP-03",
+      "nombre": "Alta de cliente: email inválido, duplicado y nuevo",
+      "inicio": "2026-11-13T16:40:37.687Z",
+      "checks": [
+        {
+          "descripcion": "Email inválido",
+          "esperado": "rechazado en el navegador",
+          "observado": "No se pudo dar de alta el cliente: El formato del email no es válido (ejemplo: nombre@dominio.com).",
+          "ok": true
+        },
+        {
+          "descripcion": "No se envía POST con email inválido",
+          "esperado": "0 POST",
+          "observado": "0",
+          "ok": true
+        },
+        {
+          "descripcion": "Clientes tras el email inválido",
+          "esperado": "3",
+          "observado": "3",
+          "ok": true
+        },
+        {
+          "descripcion": "Email existente («ana@example.com»)",
+          "esperado": "rechazado con mensaje del servidor",
+          "observado": "No se pudo dar de alta el cliente: Ya existe un cliente con ese email",
+          "ok": true
+        },
+        {
+          "descripcion": "Respuesta del servidor para el email repetido",
+          "esperado": "409",
+          "observado": "409",
+          "ok": true
+        },
+        {
+          "descripcion": "Clientes tras el email repetido",
+          "esperado": "3",
+          "observado": "3",
+          "ok": true
+        },
+        {
+          "descripcion": "El cliente QA aparece en la tabla",
+          "esperado": "1 fila",
+          "observado": "1",
+          "ok": true
+        },
+        {
+          "descripcion": "El cliente QA aparece en el selector de Ventas",
+          "esperado": "sí",
+          "observado": "sí",
+          "ok": true
+        }
+      ],
+      "notas": [
+        "No se probó el email existente EN MAYÚSCULAS: el backend no normaliza mayúsculas y el intento podía crear un cliente extra, fuera del límite de esta corrida.",
+        "Ya existía un cliente «QA Prueba Paso 7» (qa.paso7@example.com); se reutiliza y no se crea otro."
+      ],
+      "capturas": [
+        "capturas/04-cp03-cliente.png"
+      ],
+      "error": null
+    },
+    {
+      "id": "CP-04",
+      "nombre": "Venta: sin cliente, cantidades inválidas y libro repetido",
+      "inicio": "2026-11-13T16:40:39.545Z",
+      "checks": [
+        {
+          "descripcion": "Agregar el primer renglón",
+          "esperado": "1 renglón",
+          "observado": "1",
+          "ok": true
+        },
+        {
+          "descripcion": "Confirmar sin cliente",
+          "esperado": "se rechaza",
+          "observado": "No se pudo confirmar la venta: Elegí un cliente para confirmar la venta.",
+          "ok": true
+        },
+        {
+          "descripcion": "No se envía POST sin cliente",
+          "esperado": "0 POST",
+          "observado": "0",
+          "ok": true
+        },
+        {
+          "descripcion": "Cantidad «0»",
+          "esperado": "se rechaza y el ticket sigue con 1 renglón",
+          "observado": "La cantidad debe ser un número entero mayor que cero. · 1 renglón(es)",
+          "ok": true
+        },
+        {
+          "descripcion": "Cantidad «-1»",
+          "esperado": "se rechaza y el ticket sigue con 1 renglón",
+          "observado": "La cantidad debe ser un número entero mayor que cero. · 1 renglón(es)",
+          "ok": true
+        },
+        {
+          "descripcion": "Cantidad «1.5»",
+          "esperado": "se rechaza y el ticket sigue con 1 renglón",
+          "observado": "La cantidad debe ser un número entero mayor que cero. · 1 renglón(es)",
+          "ok": true
+        },
+        {
+          "descripcion": "Libro repetido en el ticket",
+          "esperado": "se avisa y no se duplica el renglón",
+          "observado": "«Rayuela» ya está en el ticket. Cambiá su cantidad en la tabla de renglones. · 1 renglón(es)",
+          "ok": true
+        }
+      ],
+      "notas": [],
+      "capturas": [
+        "capturas/05-cp04-rechazos.png"
+      ],
+      "error": null
+    },
+    {
+      "id": "CP-05",
+      "nombre": "Venta válida con dos renglones e importes del servidor",
+      "inicio": "2026-11-13T16:40:42.710Z",
+      "checks": [
+        {
+          "descripcion": "Venta del cliente QA presente en el listado del servidor",
+          "esperado": "1",
+          "observado": "1",
+          "ok": true
+        },
+        {
+          "descripcion": "Id de la venta reutilizada",
+          "esperado": "5",
+          "observado": "5",
+          "ok": true
+        },
+        {
+          "descripcion": "Total de la venta en el servidor",
+          "esperado": "78500.50",
+          "observado": "78500.50",
+          "ok": true
+        },
+        {
+          "descripcion": "Renglones del detalle del servidor",
+          "esperado": "2",
+          "observado": "2",
+          "ok": true
+        }
+      ],
+      "notas": [
+        "Ya existía una venta del cliente QA (id 5), dada de alta desde la interfaz en la sesión de QA; en esta corrida se reutiliza y no se crea otra."
+      ],
+      "capturas": [
+        "capturas/06-cp05-venta.png"
+      ],
+      "error": null
+    },
+    {
+      "id": "CP-06",
+      "nombre": "Historial y detalle con importes históricos del servidor",
+      "inicio": "2026-11-13T16:40:43.746Z",
+      "checks": [
+        {
+          "descripcion": "Botón «Ver detalle» de la venta QA",
+          "esperado": "encontrado",
+          "observado": "sí",
+          "ok": true
+        },
+        {
+          "descripcion": "Detalle desplegado en el historial",
+          "esperado": "tabla con renglones",
+          "observado": "2 renglón(es)",
+          "ok": true
+        },
+        {
+          "descripcion": "Precio unitario del detalle vs. servidor",
+          "esperado": "25000.00",
+          "observado": "25000.00",
+          "ok": true
+        },
+        {
+          "descripcion": "Subtotal del detalle vs. servidor",
+          "esperado": "50000.00",
+          "observado": "50000.00",
+          "ok": true
+        },
+        {
+          "descripcion": "Total del detalle vs. servidor",
+          "esperado": "78500.50",
+          "observado": "78500.50",
+          "ok": true
+        }
+      ],
+      "notas": [
+        "No se probó el escenario de cambiar el precio del catálogo: no hay UI ni endpoint de edición de precios en el front, y esta corrida no podía modificar libros. Se verificó que los importes mostrados son los del servidor y no se recalculan con el catálogo."
+      ],
+      "capturas": [
+        "capturas/07-cp06-historial-detalle.png"
+      ],
+      "error": null
+    },
+    {
+      "id": "CP-07",
+      "nombre": "Recarga de la página sin duplicar registros",
+      "inicio": "2026-11-13T16:40:44.587Z",
+      "checks": [
+        {
+          "descripcion": "Libros antes y después de recargar",
+          "esperado": "4",
+          "observado": "4",
+          "ok": true
+        },
+        {
+          "descripcion": "Clientes antes y después de recargar",
+          "esperado": "3",
+          "observado": "3",
+          "ok": true
+        },
+        {
+          "descripcion": "Ventas antes y después de recargar",
+          "esperado": "3",
+          "observado": "3",
+          "ok": true
+        },
+        {
+          "descripcion": "Catálogo dibujado tras recargar",
+          "esperado": "4 filas",
+          "observado": "4 filas",
+          "ok": true
+        },
+        {
+          "descripcion": "Ids de cliente repetidos",
+          "esperado": "0",
+          "observado": "0",
+          "ok": true
+        },
+        {
+          "descripcion": "Ids de venta repetidos",
+          "esperado": "0",
+          "observado": "0",
+          "ok": true
+        },
+        {
+          "descripcion": "Cliente QA tras recargar",
+          "esperado": "1",
+          "observado": "1",
+          "ok": true
+        },
+        {
+          "descripcion": "Venta QA tras recargar",
+          "esperado": "1",
+          "observado": "1",
+          "ok": true
+        },
+        {
+          "descripcion": "Peticiones a /api/ registradas en toda la corrida",
+          "esperado": "> 0",
+          "observado": "50",
+          "ok": true
+        }
+      ],
+      "notas": [],
+      "capturas": [
+        "capturas/08-cp07-recarga.png"
+      ],
+      "error": null
+    },
+    {
+      "id": "CP-08",
+      "nombre": "Navegación por teclado y anchos de 320 px y 1280 px",
+      "inicio": "2026-11-13T16:40:53.005Z",
+      "checks": [
+        {
+          "descripcion": "A 320 px: sin scroll horizontal global",
+          "esperado": "scrollWidth <= innerWidth",
+          "observado": "305 <= 320",
+          "ok": true
+        },
+        {
+          "descripcion": "A 320 px: contenedores de tabla con overflow-x auto",
+          "esperado": "todos auto",
+          "observado": "[\"auto\",\"auto\",\"auto\",\"auto\",\"auto\"]",
+          "ok": true
+        },
+        {
+          "descripcion": "A 320 px: al menos una tabla desborda dentro de su contenedor",
+          "esperado": ">= 1",
+          "observado": "1",
+          "ok": true
+        },
+        {
+          "descripcion": "A 1280 px: sin scroll horizontal global",
+          "esperado": "scrollWidth <= innerWidth",
+          "observado": "1265 <= 1280",
+          "ok": true
+        },
+        {
+          "descripcion": "A 1280 px: contenedores de tabla con overflow-x auto",
+          "esperado": "todos auto",
+          "observado": "[\"auto\",\"auto\",\"auto\",\"auto\",\"auto\"]",
+          "ok": true
+        },
+        {
+          "descripcion": "El tabulador recorre los enlaces del nav",
+          "esperado": ">= 5 enlaces",
+          "observado": "[\"buscador-catalogo\",\"enlace-catalogo\",\"enlace-libros\",\"enlace-clientes\",\"enlace-ventas\",\"enlace-historial\",\"btn-tema\"]",
+          "ok": true
+        },
+        {
+          "descripcion": "El tabulador alcanza el botón de tema",
+          "esperado": "btn-tema",
+          "observado": "[\"buscador-catalogo\",\"enlace-catalogo\",\"enlace-libros\",\"enlace-clientes\",\"enlace-ventas\",\"enlace-historial\",\"btn-tema\"]",
+          "ok": true
+        },
+        {
+          "descripcion": "Foco visible en el campo de nombre de cliente",
+          "esperado": "outline o sombra visible",
+          "observado": "{\"id\":\"cliente-nombre\",\"focusVisible\":true,\"outlineStyle\":\"solid\",\"outlineWidth\":\"3px\",\"boxShadow\":\"none\"}",
+          "ok": true
+        },
+        {
+          "descripcion": "Enter sobre «Clientes» abre la vista Clientes",
+          "esperado": "visible",
+          "observado": "visible",
+          "ok": true
+        }
+      ],
+      "notas": [],
+      "capturas": [
+        "capturas/09-cp08-320px.png",
+        "capturas/10-cp08-1280px.png"
+      ],
+      "error": null
+    },
+    {
+      "id": "EXTRA",
+      "nombre": "Estado visible cuando la API no responde",
+      "inicio": "2026-11-13T16:40:56.935Z",
+      "checks": [
+        {
+          "descripcion": "Mensaje de error visible al bloquear /api/",
+          "esperado": "con texto",
+          "observado": "No se pudo conectar con el servidor. Revisá tu conexión y recargá la página.",
+          "ok": true
+        },
+        {
+          "descripcion": "La app se recupera al desbloquear /api/",
+          "esperado": "catálogo con datos",
+          "observado": "4 filas",
+          "ok": true
+        }
+      ],
+      "notas": [],
+      "capturas": [
+        "capturas/11-error-conexion.png"
+      ],
+      "error": null
+    }
+  ],
+  "erroresDeConsola": [
+    {
+      "ts": "2026-11-13T16:40:57.381Z",
+      "tipo": "error",
+      "texto": "API: no se pudieron cargar los datos. Error: No se pudo conectar con el servidor. Revisá tu conexión y recargá la página.\n    at exigirLista (https://libreria.francogagliardi.me/js/nucleo/api.js:248:13)\n    at listarTodo (https://libreria.francogagliardi.me/js/nucleo/api.js:266:16)\n    at async Promise.all (index 0)\n    at async cargarTodo (https://libreria.francogagliardi.me/js/nucleo/api.js:345:24)"
+    }
+  ],
+  "excepciones": [],
+  "red": [
+    {
+      "ts": "2026-11-13T16:40:30.944Z",
+      "fase": "normal",
+      "metodo": "GET",
+      "url": "https://libreria.francogagliardi.me/api/editoriales/?limit=100&offset=0",
+      "postData": null,
+      "status": 200,
+      "mimeType": "application/json"
+    },
+    {
+      "ts": "2026-11-13T16:40:30.944Z",
+      "fase": "normal",
+      "metodo": "GET",
+      "url": "https://libreria.francogagliardi.me/api/generos/",
+      "postData": null,
+      "status": 200,
+      "mimeType": "application/json"
+    },
+    {
+      "ts": "2026-11-13T16:40:30.945Z",
+      "fase": "normal",
+      "metodo": "GET",
+      "url": "https://libreria.francogagliardi.me/api/autores/?limit=100&offset=0",
+      "postData": null,
+      "status": 200,
+      "mimeType": "application/json"
+    },
+    {
+      "ts": "2026-11-13T16:40:30.945Z",
+      "fase": "normal",
+      "metodo": "GET",
+      "url": "https://libreria.francogagliardi.me/api/libros/?limit=100&offset=0",
+      "postData": null,
+      "status": 200,
+      "mimeType": "application/json"
+    },
+    {
+      "ts": "2026-11-13T16:40:30.945Z",
+      "fase": "normal",
+      "metodo": "GET",
+      "url": "https://libreria.francogagliardi.me/api/clientes/?limit=100&offset=0",
+      "postData": null,
+      "status": 200,
+      "mimeType": "application/json"
+    },
+    {
+      "ts": "2026-11-13T16:40:30.946Z",
+      "fase": "normal",
+      "metodo": "GET",
+      "url": "https://libreria.francogagliardi.me/api/ventas/?limit=20&offset=0",
+      "postData": null,
+      "status": 200,
+      "mimeType": "application/json"
+    },
+    {
+      "ts": "2026-11-13T16:40:30.951Z",
+      "fase": "normal",
+      "metodo": "GET",
+      "url": "https://libreria.francogagliardi.me/api/libros/?limit=20&offset=0",
+      "postData": null,
+      "status": 200,
+      "mimeType": "application/json"
+    },
+    {
+      "ts": "2026-11-13T16:40:30.951Z",
+      "fase": "normal",
+      "metodo": "GET",
+      "url": "https://libreria.francogagliardi.me/api/ventas/?limit=20&offset=0",
+      "postData": null,
+      "status": 200,
+      "mimeType": "application/json"
+    },
+    {
+      "ts": "2026-11-13T16:40:31.128Z",
+      "fase": "normal",
+      "metodo": "GET",
+      "url": "https://libreria.francogagliardi.me/api/libros/1",
+      "postData": null,
+      "status": 200,
+      "mimeType": "application/json"
+    },
+    {
+      "ts": "2026-11-13T16:40:31.129Z",
+      "fase": "normal",
+      "metodo": "GET",
+      "url": "https://libreria.francogagliardi.me/api/libros/2",
+      "postData": null,
+      "status": 200,
+      "mimeType": "application/json"
+    },
+    {
+      "ts": "2026-11-13T16:40:31.129Z",
+      "fase": "normal",
+      "metodo": "GET",
+      "url": "https://libreria.francogagliardi.me/api/libros/3",
+      "postData": null,
+      "status": 200,
+      "mimeType": "application/json"
+    },
+    {
+      "ts": "2026-11-13T16:40:31.129Z",
+      "fase": "normal",
+      "metodo": "GET",
+      "url": "https://libreria.francogagliardi.me/api/libros/4",
+      "postData": null,
+      "status": 200,
+      "mimeType": "application/json"
+    },
+    {
+      "ts": "2026-11-13T16:40:31.133Z",
+      "fase": "normal",
+      "metodo": "GET",
+      "url": "https://libreria.francogagliardi.me/api/libros/1",
+      "postData": null,
+      "status": 200,
+      "mimeType": "application/json"
+    },
+    {
+      "ts": "2026-11-13T16:40:31.133Z",
+      "fase": "normal",
+      "metodo": "GET",
+      "url": "https://libreria.francogagliardi.me/api/libros/2",
+      "postData": null,
+      "status": 200,
+      "mimeType": "application/json"
+    },
+    {
+      "ts": "2026-11-13T16:40:31.133Z",
+      "fase": "normal",
+      "metodo": "GET",
+      "url": "https://libreria.francogagliardi.me/api/libros/3",
+      "postData": null,
+      "status": 200,
+      "mimeType": "application/json"
+    },
+    {
+      "ts": "2026-11-13T16:40:31.133Z",
+      "fase": "normal",
+      "metodo": "GET",
+      "url": "https://libreria.francogagliardi.me/api/libros/4",
+      "postData": null,
+      "status": 200,
+      "mimeType": "application/json"
+    },
+    {
+      "ts": "2026-11-13T16:40:33.282Z",
+      "fase": "normal",
+      "metodo": "GET",
+      "url": "https://libreria.francogagliardi.me/api/libros/?limit=20&offset=0&titulo=RAYU",
+      "postData": null,
+      "status": 200,
+      "mimeType": "application/json"
+    },
+    {
+      "ts": "2026-11-13T16:40:33.368Z",
+      "fase": "normal",
+      "metodo": "GET",
+      "url": "https://libreria.francogagliardi.me/api/libros/1",
+      "postData": null,
+      "status": 200,
+      "mimeType": "application/json"
+    },
+    {
+      "ts": "2026-11-13T16:40:33.799Z",
+      "fase": "normal",
+      "metodo": "GET",
+      "url": "https://libreria.francogagliardi.me/api/libros/?limit=20&offset=0&titulo=rayu",
+      "postData": null,
+      "status": 200,
+      "mimeType": "application/json"
+    },
+    {
+      "ts": "2026-11-13T16:40:33.884Z",
+      "fase": "normal",
+      "metodo": "GET",
+      "url": "https://libreria.francogagliardi.me/api/libros/1",
+      "postData": null,
+      "status": 200,
+      "mimeType": "application/json"
+    },
+    {
+      "ts": "2026-11-13T16:40:34.313Z",
+      "fase": "normal",
+      "metodo": "GET",
+      "url": "https://libreria.francogagliardi.me/api/libros/?limit=20&offset=0",
+      "postData": null,
+      "status": 200,
+      "mimeType": "application/json"
+    },
+    {
+      "ts": "2026-11-13T16:40:34.393Z",
+      "fase": "normal",
+      "metodo": "GET",
+      "url": "https://libreria.francogagliardi.me/api/libros/1",
+      "postData": null,
+      "status": 200,
+      "mimeType": "application/json"
+    },
+    {
+      "ts": "2026-11-13T16:40:34.393Z",
+      "fase": "normal",
+      "metodo": "GET",
+      "url": "https://libreria.francogagliardi.me/api/libros/2",
+      "postData": null,
+      "status": 200,
+      "mimeType": "application/json"
+    },
+    {
+      "ts": "2026-11-13T16:40:34.394Z",
+      "fase": "normal",
+      "metodo": "GET",
+      "url": "https://libreria.francogagliardi.me/api/libros/3",
+      "postData": null,
+      "status": 200,
+      "mimeType": "application/json"
+    },
+    {
+      "ts": "2026-11-13T16:40:34.394Z",
+      "fase": "normal",
+      "metodo": "GET",
+      "url": "https://libreria.francogagliardi.me/api/libros/4",
+      "postData": null,
+      "status": 200,
+      "mimeType": "application/json"
+    },
+    {
+      "ts": "2026-11-13T16:40:35.100Z",
+      "fase": "normal",
+      "metodo": "GET",
+      "url": "https://libreria.francogagliardi.me/api/libros/?limit=20&offset=0&titulo=zzzz-no-existe-999",
+      "postData": null,
+      "status": 200,
+      "mimeType": "application/json"
+    },
+    {
+      "ts": "2026-11-13T16:40:35.775Z",
+      "fase": "normal",
+      "metodo": "GET",
+      "url": "https://libreria.francogagliardi.me/api/libros/?limit=20&offset=0",
+      "postData": null,
+      "status": 200,
+      "mimeType": "application/json"
+    },
+    {
+      "ts": "2026-11-13T16:40:35.858Z",
+      "fase": "normal",
+      "metodo": "GET",
+      "url": "https://libreria.francogagliardi.me/api/libros/1",
+      "postData": null,
+      "status": 200,
+      "mimeType": "application/json"
+    },
+    {
+      "ts": "2026-11-13T16:40:35.858Z",
+      "fase": "normal",
+      "metodo": "GET",
+      "url": "https://libreria.francogagliardi.me/api/libros/2",
+      "postData": null,
+      "status": 200,
+      "mimeType": "application/json"
+    },
+    {
+      "ts": "2026-11-13T16:40:35.859Z",
+      "fase": "normal",
+      "metodo": "GET",
+      "url": "https://libreria.francogagliardi.me/api/libros/3",
+      "postData": null,
+      "status": 200,
+      "mimeType": "application/json"
+    },
+    {
+      "ts": "2026-11-13T16:40:35.859Z",
+      "fase": "normal",
+      "metodo": "GET",
+      "url": "https://libreria.francogagliardi.me/api/libros/4",
+      "postData": null,
+      "status": 200,
+      "mimeType": "application/json"
+    },
+    {
+      "ts": "2026-11-13T16:40:37.096Z",
+      "fase": "normal",
+      "metodo": "POST",
+      "url": "https://libreria.francogagliardi.me/api/libros/",
+      "postData": "{\"isbn\":\"978-950-07-0001-1\",\"titulo\":\"QA temporal sin crear\",\"precio\":\"100.00\",\"stock\":0,\"editorial_id\":1,\"genero_id\":null,\"autores\":[{\"autor_id\":1,\"rol\":\"autor\",\"orden\":1}]}",
+      "status": 409,
+      "mimeType": "application/json"
+    },
+    {
+      "ts": "2026-11-13T16:40:38.960Z",
+      "fase": "normal",
+      "metodo": "POST",
+      "url": "https://libreria.francogagliardi.me/api/clientes/",
+      "postData": "{\"nombre\":\"QA Prueba Paso 7\",\"email\":\"ana@example.com\"}",
+      "status": 409,
+      "mimeType": "application/json"
+    },
+    {
+      "ts": "2026-11-13T16:40:44.162Z",
+      "fase": "normal",
+      "metodo": "GET",
+      "url": "https://libreria.francogagliardi.me/api/ventas/5",
+      "postData": null,
+      "status": 200,
+      "mimeType": "application/json"
+    },
+    {
+      "ts": "2026-11-13T16:40:50.224Z",
+      "fase": "normal",
+      "metodo": "GET",
+      "url": "https://libreria.francogagliardi.me/api/editoriales/?limit=100&offset=0",
+      "postData": null,
+      "status": 200,
+      "mimeType": "application/json"
+    },
+    {
+      "ts": "2026-11-13T16:40:50.224Z",
+      "fase": "normal",
+      "metodo": "GET",
+      "url": "https://libreria.francogagliardi.me/api/generos/",
+      "postData": null,
+      "status": 200,
+      "mimeType": "application/json"
+    },
+    {
+      "ts": "2026-11-13T16:40:50.225Z",
+      "fase": "normal",
+      "metodo": "GET",
+      "url": "https://libreria.francogagliardi.me/api/autores/?limit=100&offset=0",
+      "postData": null,
+      "status": 200,
+      "mimeType": "application/json"
+    },
+    {
+      "ts": "2026-11-13T16:40:50.225Z",
+      "fase": "normal",
+      "metodo": "GET",
+      "url": "https://libreria.francogagliardi.me/api/libros/?limit=100&offset=0",
+      "postData": null,
+      "status": 200,
+      "mimeType": "application/json"
+    },
+    {
+      "ts": "2026-11-13T16:40:50.233Z",
+      "fase": "normal",
+      "metodo": "GET",
+      "url": "https://libreria.francogagliardi.me/api/clientes/?limit=100&offset=0",
+      "postData": null,
+      "status": 200,
+      "mimeType": "application/json"
+    },
+    {
+      "ts": "2026-11-13T16:40:50.234Z",
+      "fase": "normal",
+      "metodo": "GET",
+      "url": "https://libreria.francogagliardi.me/api/ventas/?limit=20&offset=0",
+      "postData": null,
+      "status": 200,
+      "mimeType": "application/json"
+    },
+    {
+      "ts": "2026-11-13T16:40:50.234Z",
+      "fase": "normal",
+      "metodo": "GET",
+      "url": "https://libreria.francogagliardi.me/api/libros/?limit=20&offset=0",
+      "postData": null,
+      "status": 200,
+      "mimeType": "application/json"
+    },
+    {
+      "ts": "2026-11-13T16:40:50.235Z",
+      "fase": "normal",
+      "metodo": "GET",
+      "url": "https://libreria.francogagliardi.me/api/ventas/?limit=20&offset=0",
+      "postData": null,
+      "status": 200,
+      "mimeType": "application/json"
+    },
+    {
+      "ts": "2026-11-13T16:40:50.448Z",
+      "fase": "normal",
+      "metodo": "GET",
+      "url": "https://libreria.francogagliardi.me/api/libros/1",
+      "postData": null,
+      "status": 200,
+      "mimeType": "application/json"
+    },
+    {
+      "ts": "2026-11-13T16:40:50.450Z",
+      "fase": "normal",
+      "metodo": "GET",
+      "url": "https://libreria.francogagliardi.me/api/libros/2",
+      "postData": null,
+      "status": 200,
+      "mimeType": "application/json"
+    },
+    {
+      "ts": "2026-11-13T16:40:50.451Z",
+      "fase": "normal",
+      "metodo": "GET",
+      "url": "https://libreria.francogagliardi.me/api/libros/3",
+      "postData": null,
+      "status": 200,
+      "mimeType": "application/json"
+    },
+    {
+      "ts": "2026-11-13T16:40:50.451Z",
+      "fase": "normal",
+      "metodo": "GET",
+      "url": "https://libreria.francogagliardi.me/api/libros/4",
+      "postData": null,
+      "status": 200,
+      "mimeType": "application/json"
+    },
+    {
+      "ts": "2026-11-13T16:40:50.498Z",
+      "fase": "normal",
+      "metodo": "GET",
+      "url": "https://libreria.francogagliardi.me/api/libros/1",
+      "postData": null,
+      "status": 200,
+      "mimeType": "application/json"
+    },
+    {
+      "ts": "2026-11-13T16:40:50.498Z",
+      "fase": "normal",
+      "metodo": "GET",
+      "url": "https://libreria.francogagliardi.me/api/libros/2",
+      "postData": null,
+      "status": 200,
+      "mimeType": "application/json"
+    },
+    {
+      "ts": "2026-11-13T16:40:50.499Z",
+      "fase": "normal",
+      "metodo": "GET",
+      "url": "https://libreria.francogagliardi.me/api/libros/3",
+      "postData": null,
+      "status": 200,
+      "mimeType": "application/json"
+    },
+    {
+      "ts": "2026-11-13T16:40:50.499Z",
+      "fase": "normal",
+      "metodo": "GET",
+      "url": "https://libreria.francogagliardi.me/api/libros/4",
+      "postData": null,
+      "status": 200,
+      "mimeType": "application/json"
+    },
+    {
+      "ts": "2026-11-13T16:40:57.363Z",
+      "fase": "api-bloqueada",
+      "metodo": "GET",
+      "url": "https://libreria.francogagliardi.me/api/editoriales/?limit=100&offset=0",
+      "postData": null,
+      "status": "FALLO",
+      "error": ""
+    },
+    {
+      "ts": "2026-11-13T16:40:57.365Z",
+      "fase": "api-bloqueada",
+      "metodo": "GET",
+      "url": "https://libreria.francogagliardi.me/api/generos/",
+      "postData": null,
+      "status": "FALLO",
+      "error": ""
+    },
+    {
+      "ts": "2026-11-13T16:40:57.366Z",
+      "fase": "api-bloqueada",
+      "metodo": "GET",
+      "url": "https://libreria.francogagliardi.me/api/autores/?limit=100&offset=0",
+      "postData": null,
+      "status": "FALLO",
+      "error": ""
+    },
+    {
+      "ts": "2026-11-13T16:40:57.367Z",
+      "fase": "api-bloqueada",
+      "metodo": "GET",
+      "url": "https://libreria.francogagliardi.me/api/libros/?limit=100&offset=0",
+      "postData": null,
+      "status": "FALLO",
+      "error": ""
+    },
+    {
+      "ts": "2026-11-13T16:40:57.379Z",
+      "fase": "api-bloqueada",
+      "metodo": "GET",
+      "url": "https://libreria.francogagliardi.me/api/clientes/?limit=100&offset=0",
+      "postData": null,
+      "status": "FALLO",
+      "error": ""
+    },
+    {
+      "ts": "2026-11-13T16:40:57.380Z",
+      "fase": "api-bloqueada",
+      "metodo": "GET",
+      "url": "https://libreria.francogagliardi.me/api/ventas/?limit=20&offset=0",
+      "postData": null,
+      "status": "FALLO",
+      "error": ""
+    },
+    {
+      "ts": "2026-11-13T16:40:57.381Z",
+      "fase": "api-bloqueada",
+      "metodo": "GET",
+      "url": "https://libreria.francogagliardi.me/api/libros/?limit=20&offset=0",
+      "postData": null,
+      "status": "FALLO",
+      "error": ""
+    },
+    {
+      "ts": "2026-11-13T16:40:57.382Z",
+      "fase": "api-bloqueada",
+      "metodo": "GET",
+      "url": "https://libreria.francogagliardi.me/api/ventas/?limit=20&offset=0",
+      "postData": null,
+      "status": "FALLO",
+      "error": ""
+    },
+    {
+      "ts": "2026-11-13T16:40:58.154Z",
+      "fase": "normal",
+      "metodo": "GET",
+      "url": "https://libreria.francogagliardi.me/api/editoriales/?limit=100&offset=0",
+      "postData": null,
+      "status": 200,
+      "mimeType": "application/json"
+    },
+    {
+      "ts": "2026-11-13T16:40:58.155Z",
+      "fase": "normal",
+      "metodo": "GET",
+      "url": "https://libreria.francogagliardi.me/api/generos/",
+      "postData": null,
+      "status": 200,
+      "mimeType": "application/json"
+    },
+    {
+      "ts": "2026-11-13T16:40:58.156Z",
+      "fase": "normal",
+      "metodo": "GET",
+      "url": "https://libreria.francogagliardi.me/api/autores/?limit=100&offset=0",
+      "postData": null,
+      "status": 200,
+      "mimeType": "application/json"
+    },
+    {
+      "ts": "2026-11-13T16:40:58.156Z",
+      "fase": "normal",
+      "metodo": "GET",
+      "url": "https://libreria.francogagliardi.me/api/libros/?limit=100&offset=0",
+      "postData": null,
+      "status": 200,
+      "mimeType": "application/json"
+    },
+    {
+      "ts": "2026-11-13T16:40:58.156Z",
+      "fase": "normal",
+      "metodo": "GET",
+      "url": "https://libreria.francogagliardi.me/api/clientes/?limit=100&offset=0",
+      "postData": null,
+      "status": 200,
+      "mimeType": "application/json"
+    },
+    {
+      "ts": "2026-11-13T16:40:58.156Z",
+      "fase": "normal",
+      "metodo": "GET",
+      "url": "https://libreria.francogagliardi.me/api/ventas/?limit=20&offset=0",
+      "postData": null,
+      "status": 200,
+      "mimeType": "application/json"
+    },
+    {
+      "ts": "2026-11-13T16:40:58.156Z",
+      "fase": "normal",
+      "metodo": "GET",
+      "url": "https://libreria.francogagliardi.me/api/libros/?limit=20&offset=0",
+      "postData": null,
+      "status": 200,
+      "mimeType": "application/json"
+    },
+    {
+      "ts": "2026-11-13T16:40:58.157Z",
+      "fase": "normal",
+      "metodo": "GET",
+      "url": "https://libreria.francogagliardi.me/api/ventas/?limit=20&offset=0",
+      "postData": null,
+      "status": 200,
+      "mimeType": "application/json"
+    },
+    {
+      "ts": "2026-11-13T16:40:58.329Z",
+      "fase": "normal",
+      "metodo": "GET",
+      "url": "https://libreria.francogagliardi.me/api/libros/1",
+      "postData": null,
+      "status": 200,
+      "mimeType": "application/json"
+    },
+    {
+      "ts": "2026-11-13T16:40:58.329Z",
+      "fase": "normal",
+      "metodo": "GET",
+      "url": "https://libreria.francogagliardi.me/api/libros/2",
+      "postData": null,
+      "status": 200,
+      "mimeType": "application/json"
+    },
+    {
+      "ts": "2026-11-13T16:40:58.331Z",
+      "fase": "normal",
+      "metodo": "GET",
+      "url": "https://libreria.francogagliardi.me/api/libros/3",
+      "postData": null,
+      "status": 200,
+      "mimeType": "application/json"
+    },
+    {
+      "ts": "2026-11-13T16:40:58.332Z",
+      "fase": "normal",
+      "metodo": "GET",
+      "url": "https://libreria.francogagliardi.me/api/libros/4",
+      "postData": null,
+      "status": 200,
+      "mimeType": "application/json"
+    },
+    {
+      "ts": "2026-11-13T16:40:58.333Z",
+      "fase": "normal",
+      "metodo": "GET",
+      "url": "https://libreria.francogagliardi.me/api/libros/1",
+      "postData": null,
+      "status": 200,
+      "mimeType": "application/json"
+    },
+    {
+      "ts": "2026-11-13T16:40:58.333Z",
+      "fase": "normal",
+      "metodo": "GET",
+      "url": "https://libreria.francogagliardi.me/api/libros/2",
+      "postData": null,
+      "status": 200,
+      "mimeType": "application/json"
+    },
+    {
+      "ts": "2026-11-13T16:40:58.334Z",
+      "fase": "normal",
+      "metodo": "GET",
+      "url": "https://libreria.francogagliardi.me/api/libros/3",
+      "postData": null,
+      "status": 200,
+      "mimeType": "application/json"
+    },
+    {
+      "ts": "2026-11-13T16:40:58.334Z",
+      "fase": "normal",
+      "metodo": "GET",
+      "url": "https://libreria.francogagliardi.me/api/libros/4",
+      "postData": null,
+      "status": 200,
+      "mimeType": "application/json"
+    }
+  ],
+  "notas": [],
+  "_librosVenta": {
+    "libro1": "1",
+    "libro2": "2"
+  }
+}

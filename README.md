@@ -1,543 +1,453 @@
-# Librería — Parcial 1 de Programación III (UTN)
+# Librería — Frontend del TP Global (Programación III, UTN)
 
-Aplicación web de una librería: catálogo de libros, alta de libros y clientes, venta
-simulada e historial de ventas. Funciona **entera en el navegador**: no hay servidor,
-no hay base de datos y no hay peticiones de red. Los datos se conservan entre sesiones
-con `localStorage`.
+Aplicación web de una librería: catálogo, alta de libros y clientes, venta simulada e
+historial de ventas. El frontend es **estático** (HTML, CSS y JavaScript nativo, sin build)
+y se sirve con **nginx**. Los datos ya no viven en el navegador: se piden a una **API
+FastAPI + PostgreSQL** a través del mismo origen, usando `/api` como base.
 
-- **Sin frameworks, sin librerías, sin CDN, sin build tools, sin gestor de paquetes.**
-- **Sin `fetch`/`axios`:** la aplicación no se comunica con ningún backend.
-- **Sin `innerHTML` con datos de usuario:** todo se inserta en el DOM con
-  `textContent` y nodos creados a mano, para evitar XSS.
-
----
-
-## 1. Cómo ejecutar la aplicación
-
-La app es estática: alcanza con abrir `index.html` en un navegador moderno.
-
-| Opción | Cómo | URL |
-| --- | --- | --- |
-| Archivo local | Doble clic en `index.html` | `file:///.../index.html` |
-| Servidor local de la consigna | `docker compose up -d --build` | `http://localhost:8080` |
-| Despliegue | Ver `docs/DEPLOY.md` (nginx + EasyPanel) | dominio configurado |
-
-> **Importante:** cada una de estas tres formas es un **origen distinto** para el
-> navegador y, por lo tanto, un almacén de datos distinto. Ver la sección 4.
+- Sin frameworks, sin librerías de terceros, sin CDN, sin `npm`, sin bundler.
+- El único almacenamiento local es la **preferencia de tema** (`localStorage`, clave
+  `tema-preferido`). Libros, clientes y ventas **no** se guardan en `localStorage`.
+- Todo el contenido que viene del servidor se inserta con `textContent` y nodos creados a
+  mano; nunca con `innerHTML`.
 
 ---
 
-## 2. Estructura del proyecto y mapa de módulos
+## 1. Enlaces y estado
+
+| Qué | Dónde |
+| --- | --- |
+| Aplicación desplegada | <https://libreria.francogagliardi.me> |
+| Estado del backend | `GET https://libreria.francogagliardi.me/api/health/ready` |
+| Repositorio del frontend | `parcial1-prog3` (este repositorio) |
+| Repositorio del backend | `parcial2-prog3` (FastAPI + PostgreSQL) |
+| Guía de despliegue | [`docs/DEPLOY.md`](docs/DEPLOY.md) |
+
+La verificación de QA documentada en este README se ejecutó el **2026-11-13** contra la URL
+pública, con Chrome 156 headless. El detalle está en la sección 10 y en `evidence/paso-7/`.
+
+---
+
+## 2. Arquitectura
 
 ```
-.
-├── index.html          # Maquetado de las 5 vistas (M01)
+Navegador
+  └─ index.html + css/ + js/            (sitio estático, sin build)
+        │  fetch("/api/…")
+        ▼
+     nginx (contenedor del front)
+        ├─ location /        → sirve los archivos estáticos
+        └─ location /api/    → proxy_pass http://${API_UPSTREAM}/
+                                   │
+                                   ▼
+                              FastAPI  →  PostgreSQL
+```
+
+### 2.1 Base de la API y proxy
+
+- El cliente HTTP vive en `js/nucleo/api.js` y usa `BASE = "/api"`. Todas las llamadas del
+  front son **relativas al mismo origen** (`/api/libros/`, `/api/clientes/`, …).
+- nginx resuelve el backend con `proxy_pass http://${API_UPSTREAM}/`. La **barra final** es
+  obligatoria: hace que `/api/libros/` llegue a FastAPI como `/libros/`.
+- `API_UPSTREAM` tiene la forma `host:puerto`, **sin** `http://` y **sin** barra final
+  (por ejemplo `libreria-api:8000`). Si falta la variable, nginx no arranca.
+- Al ser mismo origen no hace falta CORS ni una URL absoluta en el JavaScript.
+
+### 2.2 Una sola fuente de verdad
+
+Los datos de la aplicación salen siempre de la API:
+
+- `API.cargarTodo()` pide editoriales, géneros, autores, libros (con el detalle de cada
+  libro para sus autorías), clientes y las últimas ventas. Recién cuando llegaron **todas**
+  las respuestas reemplaza los arreglos de `Datos` y redibuja las vistas: se ve la
+  información completa o un mensaje de error, nunca una mezcla.
+- `Datos` (`js/nucleo/data.js`) es sólo un contenedor en memoria que se llena desde la API.
+  Arranca vacío: no hay datos de respaldo locales.
+- Los importes de una venta (precio unitario, subtotal y total) son los que devolvió el
+  servidor al registrarla y se muestran tal cual; el front nunca los recalcula con el
+  precio actual del catálogo.
+- La única excepción es el tema claro/oscuro, que sí se guarda en `localStorage`.
+- Si el navegador conserva claves viejas del Parcial 1 (por ejemplo `libreria.libros`), ya
+  no se leen: se pueden borrar sin afectar la aplicación.
+
+### 2.3 Arranque y sincronización entre vistas
+
+- `index.html` carga los módulos y, al final, `js/nucleo/api.js`. Los módulos se dibujan
+  primero con `Datos` vacío y registran sus eventos; cuando `API.cargarTodo()` termina,
+  llama al `render()` de cada módulo con los datos del servidor.
+- Después de un alta exitosa, el módulo correspondiente actualiza `Datos` y emite el evento
+  `datos-actualizados` en `document` (`detail.coleccion = "libros" | "clientes" | "ventas"`).
+  Así el catálogo y el historial se recargan sin acoplar los módulos entre sí.
+- Una venta confirmada muestra el comprobante armado con la respuesta del servidor y dispara
+  la recarga del historial.
+
+---
+
+## 3. Estructura del repositorio
+
+```
+parcial1-prog3/
+├── index.html                     # Las 5 vistas en una sola página (navegación por hash)
 ├── css/
-│   ├── style.css       # Estilos y adaptabilidad (M02)
-│   └── tema.css        # Estilos del tema claro/oscuro (M07)
+│   ├── style.css                  # Estilos generales, layout y componentes
+│   └── tema.css                   # Variables de los temas claro y oscuro
 ├── js/
-│   ├── nucleo/         # Scripts transversales: los usa más de un módulo
-│   │   ├── data.js     # Semillas: 6 libros, 2 editoriales, 2 géneros, 3 autores, 3 clientes (M03)
-│   │   ├── navegacion.js # Cambio de vista a una sola vez (M03)
-│   │   └── storage.js  # Persistencia en localStorage (M06)
-│   └── modulos/        # Scripts de un módulo cada uno
-│       ├── tema.js     # Tema claro/oscuro y preferencia guardada (M07)
-│       ├── catalogo.js # Render del catálogo y buscador por título (M03)
-│       ├── libros.js   # Alta de libros y validación (M04)
-│       ├── clientes.js # Alta de clientes y validación (M04)
-│       ├── ventas.js   # Ticket y confirmación de venta (M05)
-│       └── historial.js # Historial de ventas con detalle desplegable (M05)
-├── docs/
-│   └── DEPLOY.md       # Infraestructura de despliegue
-├── README.md           # Este documento (M06)
-├── AGENTS.md           # Reglas del proyecto para el equipo y para los agentes (M06)
-├── CLAUDE.md           # Alias de AGENTS.md para otros asistentes (M06)
-├── Dockerfile          # Imagen del sitio: nginx alpine + los archivos estáticos
-├── nginx.conf          # Gzip, cabeceras de seguridad, caché no-cache y try_files
-├── docker-compose.yml  # Prueba local en http://localhost:8080
-├── .dockerignore       # Qué queda fuera del contexto de build de la imagen
-├── .gitignore          # Qué queda fuera del control de versiones
-├── .gitattributes       # Normalización de fin de línea
-├── .github/            # Workflow de despliegue (GitHub Actions)
-├── openspec/           # Especificaciones y trazabilidad (OpenSpec)
-└── .opencode/          # Comandos y skills de OpenSpec para los agentes
+│   ├── nucleo/
+│   │   ├── api.js                 # Cliente HTTP, normalización y carga inicial
+│   │   ├── data.js                # Contenedor en memoria + búsqueda local por título
+│   │   └── navegacion.js          # Cambio de vistas con hash y aria-current
+│   └── modulos/
+│       ├── catalogo.js            # Catálogo: búsqueda, paginación y estados
+│       ├── libros.js              # Alta de libros (con autores y roles)
+│       ├── clientes.js            # Alta de clientes
+│       ├── ventas.js              # Ticket y confirmación de venta
+│       ├── historial.js           # Listado y detalle de ventas
+│       └── tema.js                # Tema claro/oscuro (se carga en el <head>)
+├── Dockerfile                     # Imagen nginx con el sitio y la plantilla del proxy
+├── default.conf.template          # nginx: estáticos + proxy /api/ con ${API_UPSTREAM}
+├── docker-compose.yml             # Prueba local del front en http://localhost:8080
+├── .github/workflows/deploy.yml   # Build, smoke test y deploy a la VPS
+├── docs/DEPLOY.md                 # Detalle de infraestructura y EasyPanel
+└── evidence/paso-7/               # Evidencia de la QA: JSON, log, capturas y curl
 ```
 
-La separación de `js/` es **por rol, no por módulo**:
-
-- `js/nucleo/` tiene los scripts que usa **más de un** módulo: las semillas
-  (`data.js`), el cambio de vista (`navegacion.js`) y la persistencia
-  (`storage.js`).
-- `js/modulos/` tiene los scripts de **una sola responsabilidad**: el tema, el
-  catálogo, el alta de libros, el alta de clientes, la venta y el historial.
-
-Las cinco vistas son **Catálogo**, **Libros**, **Clientes**, **Ventas** e **Historial**.
-Se muestran de a una: `js/nucleo/navegacion.js` alterna el atributo `hidden` de cada
-`<section class="vista">` y toma el hash de la URL como estado inicial.
+> `js/nucleo/storage.js` ya no existe: la persistencia pasó al backend. El front no escribe
+> datos en `localStorage`.
 
 ---
 
-## 3. Persistencia (M06)
+## 4. Módulos y responsabilidades
 
-### 3.1 Qué se guarda y dónde
-
-Se guardan **tres colecciones**, cada una en su propia clave de `localStorage`. El valor
-de cada clave es un **array JSON de objetos planos**.
-
-| Clave | Contenido | Semilla inicial |
+| Módulo | Archivos | Responsabilidad actual |
 | --- | --- | --- |
-| `libreria.libros` | Libros del catálogo | 6 libros |
-| `libreria.clientes` | Clientes registrados | 3 clientes |
-| `libreria.ventas` | Ventas confirmadas | array vacío |
+| **M01** | `index.html` | Las 5 vistas, etiquetas semánticas, formularios accesibles y contenedores de mensajes. |
+| **M02** | `css/style.css` | Identidad visual, layout con Grid/Flexbox, tablas con scroll interno, foco visible y adaptabilidad a 320 px y 1280 px. |
+| **M03** | `js/nucleo/data.js`, `js/modulos/catalogo.js` | Contenedor `Datos`, búsqueda por título (parcial, sin distinguir mayúsculas, con `trim()`), catálogo paginado de 20 y estados vacío/sin resultados/error. |
+| **M04** | `js/modulos/libros.js`, `js/modulos/clientes.js` | Altas con validación en el navegador y `POST` a la API; los duplicados (ISBN, email) los rechaza el servidor con `409`. |
+| **M05** | `js/modulos/ventas.js`, `js/modulos/historial.js` | Ticket, confirmación con importes del servidor, historial paginado y detalle bajo demanda. |
+| **M06** | `README.md`, `Dockerfile`, `default.conf.template`, `docs/DEPLOY.md` | Documentación, imagen de despliegue, proxy `/api/` y registro de las pruebas. |
+| **M07** | `css/tema.css`, `js/modulos/tema.js` | Tema claro/oscuro con preferencia del sistema y persistencia de la elección. |
+| Global | `js/nucleo/api.js`, `js/nucleo/navegacion.js` | Cliente HTTP, normalización de respuestas, carga inicial y navegación entre vistas. |
 
-Estructura real observada en `localStorage` (tras una venta de 2×Rayuela + 1×El túnel):
+---
 
-```jsonc
-// libreria.libros
-[{"id":"lib-01","titulo":"Rayuela","isbn":"9788437604572","precio":1500,
-  "editorialId":"edi-01","generoId":"gen-01","autorIds":["aut-01"]},
- {"id":"lib-04","titulo":"Sobre héroes y tumbas","isbn":"9789507312694","precio":1800,
-  "editorialId":"edi-01","generoId":null,"autorIds":["aut-02"]}]
+## 5. API que consume el front
 
-// libreria.clientes
-[{"id":"cli-01","nombre":"Ana María Gómez","email":"ana.gomez@example.com"}]
+Todos los pedidos son `GET` salvo los `POST` indicados, y usan `/api` como prefijo. Las
+rutas se llaman con barra final cuando la ruta del backend la tiene.
 
-// libreria.ventas
-[{"id":"ven-01","fecha":"2026-10-21T15:10:02.666Z","clienteId":"cli-01",
-  "clienteNombre":"Ana María Gómez",
-  "renglones":[{"libroId":"lib-01","titulo":"Rayuela","cantidad":2,
-                "precioUnitario":1500,"subtotal":3000},
-               {"libroId":"lib-02","titulo":"El túnel","cantidad":1,
-                "precioUnitario":2000,"subtotal":2000}],
-  "total":5000}]
+| Endpoint | Uso en el front | Módulo |
+| --- | --- | --- |
+| `GET /editoriales/` | Opciones del formulario de libros. | Carga inicial, Libros |
+| `GET /generos/` | Opciones del formulario de libros. | Carga inicial, Libros |
+| `GET /autores/` | Autores disponibles para asociar a un libro. | Carga inicial, Libros |
+| `GET /libros/?limit=20&offset=N&titulo=…` | Catálogo y búsqueda por título. | Catálogo |
+| `GET /libros/{id}` | Detalle del libro (autorías) para la columna «Autores». | Catálogo, carga inicial |
+| `POST /libros/` | Alta de libro. `201` agrega el libro devuelto y recarga el catálogo. | Libros |
+| `GET /clientes/` | Listado de clientes y opciones del selector de Ventas. | Carga inicial, Clientes, Ventas |
+| `POST /clientes/` | Alta de cliente. `201` agrega el cliente devuelto. | Clientes |
+| `POST /ventas/` | Confirma el ticket. El servidor calcula y devuelve precios, subtotales, total, fecha e id. | Ventas |
+| `GET /ventas/?limit=20&offset=N` | Listado del historial. | Historial, carga inicial |
+| `GET /ventas/{id}` | Detalle de una venta, al abrir «Ver detalle». | Historial |
+
+Manejo de errores (`js/nucleo/api.js`):
+
+- `pedir()` nunca lanza excepciones: devuelve `{ ok, status, data, mensaje }`.
+- `status: 0` significa que no hubo respuesta (red caída o backend inaccesible) y se muestra
+  «No se pudo conectar con el servidor. Revisá tu conexión y recargá la página.».
+- En `409`/`404` el mensaje del backend (`detail` de texto) se muestra tal cual.
+- En `422` se arma un texto legible con el campo y el mensaje de cada error de validación;
+  nunca se muestra el JSON crudo ni se pierde lo que el usuario escribió.
+
+---
+
+## 6. Las cinco vistas
+
+La navegación usa el hash (`#vista-catalogo`, `#vista-libros`, …, `#vista-historial`), marca
+el enlace activo con `aria-current="page"` y oculta la sección que no corresponde con el
+atributo `hidden`.
+
+### Catálogo
+
+- Tabla con Título, ISBN, Autores, Editorial, Género y Precio; 20 libros por página.
+- Buscador por título: recorta espacios exteriores (`trim()`), no distingue mayúsculas y
+  acepta coincidencias parciales. La comparación la hace la API con el parámetro `titulo`
+  (se espera 300 ms desde la última tecla para no pedir en cada letra) y la búsqueda vuelve
+  a la primera página.
+- Un libro sin género se muestra como «Sin clasificar»; si no tiene autores, «—».
+- Estados previstos: cargando, catálogo vacío, sin resultados y error de conexión. Los
+  botones «Anterior»/«Siguiente» se deshabilitan según corresponda.
+
+### Libros
+
+- Campos: título, ISBN, precio, stock, editorial, género (opcional) y uno o más autores con
+  rol (`autor`, `coautor`, `traductor`, `ilustrador`) y orden.
+- Validación en el navegador antes de enviar: título e ISBN no vacíos (ISBN de hasta 30
+  caracteres), precio mayor que cero con hasta 2 decimales, stock entero mayor o igual que
+  cero, editorial existente, al menos un autor, sin autores repetidos, orden entero mayor o
+  igual que 1 y rol válido. Los campos con error se marcan con `aria-invalid`.
+- El ISBN repetido lo rechaza el **servidor** con `409` («Ya existe un libro con ese ISBN»);
+  el front muestra ese mensaje y no altera el catálogo. El ISBN viaja tal como se escribió
+  (el backend compara sin normalizar, así que no se quitan guiones).
+- `POST /libros/` envía `{ isbn, titulo, precio, stock, editorial_id, genero_id, autores[] }`.
+  Con `201` se agrega el libro devuelto, se limpia el formulario, se recarga el catálogo y se
+  actualizan el listado y el selector de venta. El botón se deshabilita mientras se envía.
+
+### Clientes
+
+- Campos: nombre completo (hasta 120 caracteres) y email (hasta 254). El formato del email
+  se valida en el navegador con `^[^@\s]+@[^@\s]+\.[^@\s]+$`; si es inválido no se envía
+  ningún `POST`.
+- El email viaja recortado pero **sin** pasar a minúsculas: el backend compara contra su
+  `UNIQUE` tal cual. Un email repetido se rechaza con `409` («Ya existe un cliente con ese
+  email») y se muestra el mensaje del servidor sin recargar la página.
+- Con `201` el cliente devuelto se agrega al listado y al selector de Ventas, y se emite
+  `datos-actualizados`.
+
+### Ventas
+
+- Composición del ticket: cliente + libro + cantidad entera mayor que cero. Un mismo libro
+  no se agrega dos veces: se avisa y se invita a cambiar la cantidad en la tabla de
+  renglones. Cada renglón se puede editar o quitar.
+- Confirmar sin cliente, sin renglones o con cantidades inválidas se rechaza **antes** de
+  llamar a la API. Mientras se envía, el ticket queda bloqueado para evitar dobles ventas.
+  Si la API rechaza la venta o no hay conexión, el ticket y los datos cargados se conservan.
+- `POST /ventas/` envía **sólo** `{ cliente_id, renglones: [{ libro_id, cantidad }] }`. El
+  navegador no envía precios ni totales: el servidor toma el precio vigente, calcula los
+  importes con 2 decimales y devuelve la venta con `id`, `fecha` y `total`. El comprobante
+  se arma con esa respuesta.
+- **Elección de `GET /clientes/` para el selector:** la venta necesita elegir entre los
+  clientes que ya existen y la API no expone un buscador específico. Se usa el mismo listado
+  que alimenta la vista Clientes (`GET /clientes/`, paginado con `limit`/`offset`), que es
+  la fuente de verdad también en la carga inicial. Así no se inventa un endpoint nuevo, el
+  selector muestra exactamente los clientes registrados y, tras un alta, el cliente devuelto
+  por `POST /clientes/` se agrega a `Datos` y se emite `datos-actualizados` para refrescar el
+  selector sin recargar la página.
+
+### Historial
+
+- Listado paginado de 20 ventas: Identificador, Fecha, Cliente, «Ver detalle» y Total. La
+  columna «Identificador» se agrega desde el módulo para poder ubicar cada venta.
+- «Ver detalle» pide `GET /ventas/{id}` la primera vez y muestra Libro, Cantidad, Precio
+  unitario y Subtotal, más un pie con el Total. El detalle se guarda por id (una venta
+  registrada no cambia) y el botón indica `aria-expanded` y un `aria-label` con el número de
+  venta.
+- Los importes del listado y del detalle son los que devolvió el servidor; no se recalculan
+  con el precio actual del catálogo. Si el backend cambia el precio de un libro, las ventas
+  ya registradas conservan sus importes.
+
+---
+
+## 7. Tema y accesibilidad
+
+- Tema claro/oscuro: `js/modulos/tema.js` se carga en el `<head>` y aplica el tema antes de
+  pintar para evitar el destello (FOUC). Respeta `prefers-color-scheme` si el usuario no
+  eligió, y guarda la elección manual en `localStorage` con la clave `tema-preferido`. La
+  transición de colores sólo se activa al alternar el tema.
+- Foco visible: reglas `:focus-visible` con contorno sólido de 3 px (comprobado con el
+  teclado en el formulario de Clientes).
+- Los mensajes de estado usan regiones `role="status"`/`role="alert"` (con `aria-live`),
+  los campos inválidos `aria-invalid` y los botones de detalle `aria-expanded`.
+- No hay scroll horizontal global: a 320 px el ancho de contenido es 305 px y a 1280 px es
+  1265 px. Las tablas que no entran tienen desplazamiento horizontal dentro de su propio
+  contenedor (`overflow-x: auto`).
+
+---
+
+## 8. Cómo correr el proyecto en local
+
+El frontend necesita el backend para mostrar datos. Son dos repositorios.
+
+### 8.1 Backend (`parcial2-prog3`) + PostgreSQL
+
+```bash
+# 1) Base de datos local
+docker run -d --name libreria-db -p 5432:5432 \
+  -e POSTGRES_USER=postgres -e POSTGRES_PASSWORD=postgres -e POSTGRES_DB=libreria \
+  postgres:16-alpine
+
+# 2) Configuración del backend
+cd parcial2-prog3
+# .env
+#   DATABASE_URL=postgresql+asyncpg://postgres:postgres@localhost:5432/libreria
+#   SQL_ECHO=false
+
+python -m venv .venv
+# activar el entorno (.venv\Scripts\activate en Windows; source .venv/bin/activate en Linux/macOS)
+pip install -r requirements.txt
+python -m app.seed          # datos iniciales (sólo contra la base local)
+uvicorn app.main:app --reload
 ```
 
-**Qué NO se guarda:** las editoriales, los géneros y los autores. Son datos de
-referencia fijos que ninguna vista modifica, así que se mantienen en `js/nucleo/data.js` y no
-ocupan espacio ni se duplican. Cada libro y cada cliente guardan el **id** de su
-editorial, género y autores, no el texto.
+El backend queda en `http://localhost:8000`. Comprobar:
+`curl -i http://localhost:8000/health/ready`.
 
-**Sobre la cuarta clave:** el módulo de tema (M07) guarda además la preferencia
-manual de tema claro/oscuro en la clave `tema-preferido`, con los valores `"light"` o
-`"dark"`. Esa clave es **independiente de los datos de la librería**: el módulo de
-persistencia nunca la lee ni la borra, y `Almacenamiento.restablecer()` no la toca.
-Mientras el usuario no elija un tema a mano, la clave no existe (se verificó que
-`tema-preferido` queda en `null` tras cargar la aplicación). Con lo cual, en el
-almacenamiento local conviven **3 claves de datos** y, opcionalmente, **1 clave de
-preferencias de la interfaz**.
+### 8.2 Frontend (este repositorio)
 
-### 3.2 Reglas de comportamiento
+```bash
+cd parcial1-prog3
 
-- **Siembra idempotente.** La primera vez se siembran los ejemplos. Después, la decisión
-  de «¿ya hay datos?» se toma por la **existencia de la clave**, no por su longitud: si
-  `libreria.libros` existe, se recupera lo que haya; nunca se vuelven a copiar las
-  semillas encima. Por eso recargar la página **no duplica** los registros iniciales.
-- **Restauración en el lugar.** Los datos recuperados se escriben sobre los arrays vivos
-  (`Datos.libros`, `Datos.clientes`, `Datos.ventas`) sin reasignar la referencia, para
-  que los módulos que ya los tienen sigan viendo los mismos objetos.
-- **Escritura reactiva.** `js/nucleo/storage.js` escucha el evento `datos-actualizados` que
-  emiten M04 y M05 y vuelve a guardar las tres colecciones. No hace falta que cada vista
-  llame a la persistencia.
-- **Precio histórico inmutable.** Al confirmar una venta se copia el **valor** del
-  precio unitario al renglón (`precioUnitario`) y se calcula el `subtotal` en el momento
-  de la venta. Si después cambia el precio del catálogo, la venta guardada no cambia.
-  Ver el caso CP-06 de la sección 6.
-- **Tolerancia a datos corruptos.** Si una clave guardada no es un JSON válido, no es una
-  lista, o tiene registros incompletos, esa colección **se descarta entera**, se repone
-  con la semilla y se avisa con un mensaje de texto visible en
-  `#mensaje-catalogo-error` / `#mensaje-historial-error`.
-- **Tolerancia a almacenamiento no disponible.** Si el navegador bloquea `localStorage`
-  (navegación privada, cookies bloqueadas, cuota agotada), la aplicación **sigue
-  funcionando con los datos en memoria** y lo avisa por pantalla en vez de romperse.
-- **Reinicio.** Desde la consola del navegador:
-  `Almacenamiento.restablecer()` borra las tres claves y vuelve a sembrar los ejemplos.
+# Opción A: docker compose (usa API_UPSTREAM=host.docker.internal:8000)
+docker compose up -d --build
+docker compose logs -f
+docker compose down
 
-### 3.3 API pública del módulo
+# Opción B: docker build + run
+docker build -t libreria-frontend .
+docker run --rm -p 8080:80 \
+  --add-host=host.docker.internal:host-gateway \
+  -e API_UPSTREAM=host.docker.internal:8000 \
+  libreria-frontend
+```
 
-`js/nucleo/storage.js` expone el namespace `Almacenamiento`:
+Abrir `http://localhost:8080` y verificar el proxy:
 
-| Método | Qué hace |
+```bash
+curl -i http://localhost:8080/api/health/ready
+curl -s http://localhost:8080/api/libros/
+```
+
+Si el backend corre en otro host o puerto, cambiar `API_UPSTREAM` (formato `host:puerto`).
+Abrir `index.html` con doble clic (`file://`) **no** funciona: sin nginx no existe `/api` y
+la aplicación muestra su mensaje de error de conexión.
+
+---
+
+## 9. Despliegue
+
+- **Imagen** (`Dockerfile`): nginx alpine. Copia `index.html`, `css/` y `js/`, y
+  `default.conf.template` a `/etc/nginx/templates/`. El entrypoint de nginx reemplaza
+  `${API_UPSTREAM}` al arrancar (`NGINX_ENVSUBST_FILTER` limita la sustitución a esa
+  variable). Incluye `HEALTHCHECK` con `wget --spider`.
+- **EasyPanel**: app desde el Dockerfile, puerto interno 80, variable `API_UPSTREAM` con el
+  host interno del backend (por ejemplo `libreria-api:8000`) y HTTPS activado. Detalle paso a
+  paso en [`docs/DEPLOY.md`](docs/DEPLOY.md).
+- **GitHub Actions** (`.github/workflows/deploy.yml`), en cada push a `main`:
+  1. construye la imagen;
+  2. la arranca con `API_UPSTREAM=127.0.0.1:8000` (en CI no hay backend: el valor sólo
+     permite que nginx resuelva el upstream y arranque);
+  3. smoke test: `GET /` responde con la página y cada uno de los **11 assets** locales
+     (`style.css`, `tema.css` y los 9 archivos de `js/`) responde `200`;
+  4. un paso extra compara esa lista con los `href`/`src` de `index.html`, para que el smoke
+     test falle si se agrega o quita un archivo;
+  5. dispara el webhook de EasyPanel (`EASYPANEL_DEPLOY_WEBHOOK`, guardado como secret) con
+     reintentos.
+
+El pipeline **no** llama a `/api` (no hay backend en CI); la API se verifica sobre el
+despliegue, como se describe en la sección 10.
+
+---
+
+## 10. Pruebas manuales (CP-01 a CP-08) y resultados
+
+La QA se ejecutó sobre la aplicación desplegada, en Chrome headless controlado por DevTools
+Protocol (script sin dependencias, ver sección 11). La corrida final fue el **2026-11-13 a
+las 16:40 UTC**: **10 bloques, 58 verificaciones, 0 fallidos, 0 excepciones**. Hubo un único
+error en consola, esperado: el del bloque extra que bloquea `/api` a propósito. Se
+registraron 74 entradas de red; los dos `POST` de la corrida son los rechazos `409` de
+CP-02 y CP-03, así que no se creó ningún registro nuevo.
+
+Estado del servidor en el momento de la QA: 4 libros, 3 clientes y 3 ventas (ids `1`, `4`,
+`5`).
+
+> **Datos creados en producción durante la QA:** un cliente «QA Prueba Paso 7»
+> (`qa.paso7@example.com`, id `4`) y una venta del mismo cliente (id `5`, total
+> `78500.50`). No se crearon libros. En la corrida final ambos registros se **reutilizaron**,
+> no se duplicaron. La venta se puede consultar con
+> `GET /api/ventas/5` (respuesta guardada en `evidence/paso-7/curl-api-venta-5.txt`).
+
+| # | Caso | Resultado observado | Estado |
+| --- | --- | --- | --- |
+| **CP-01** | Búsqueda por título: mayúsculas, espacios, vacía e inexistente. | «RAYU» devolvió 1 resultado (Rayuela); «  rayu  » devolvió lo mismo (se recortan espacios y no distingue mayúsculas); búsqueda vacía devolvió los 4 libros; un texto inexistente dio 0 filas con el aviso «No se encontraron libros cuyo título coincida con la búsqueda.». Se registraron 3 pedidos a `/api/libros/` con el parámetro `titulo`. | OK |
+| **CP-01b** | Paginación del catálogo (caso adicional). | «Página 1», «Anterior» y «Siguiente» deshabilitados con 4 libros (menos de 20). No se pudo probar el cambio de offset: hace falta una segunda página. | OK / parcial |
+| **CP-02** | Alta de libro con ISBN existente y con ISBN nuevo. | ISBN `978-950-07-0001-1`: el servidor respondió `409` y se mostró «No se pudo dar de alta el libro: Ya existe un libro con ese ISBN»; los libros siguieron en 4. **No se probó el ISBN nuevo**: la QA tenía prohibido crear libros. | OK / parcial |
+| **CP-03** | Alta de cliente con email inválido, repetido y nuevo. | Email inválido: rechazado en el navegador, 0 `POST`, clientes en 3. Email existente `ana@example.com`: `409` con «Ya existe un cliente con ese email», clientes en 3. El cliente QA aparece en la tabla y en el selector de Ventas. **No se probó el email existente en MAYÚSCULAS** (ver limitaciones). | OK / parcial |
+| **CP-04** | Venta sin cliente, cantidad cero, negativa o decimal, libro repetido. | Sin cliente: «Elegí un cliente para confirmar la venta.» y 0 `POST`. Cantidades `0`, `-1` y `1.5`: «La cantidad debe ser un número entero mayor que cero.» y el ticket conserva 1 renglón. Libro repetido: ««Rayuela» ya está en el ticket. Cambiá su cantidad en la tabla de renglones.» y no se duplica el renglón. | OK |
+| **CP-05** | Venta válida: dos unidades a $25.000 y una a $28.500,50. | La venta QA (id `5`) existe en el servidor con total `78500.50` y 2 renglones: Rayuela 2 × `25000.00` = `50000.00` y Ficciones 1 × `28500.50` = `28500.50`. El alta se hizo desde la interfaz en la sesión de QA; la respuesta de `GET /api/ventas/5` quedó guardada en `curl-api-venta-5.txt` y en la corrida final se reutilizó la misma venta. | OK |
+| **CP-06** | Ventas confirmadas y precio del catálogo cambiado. | El detalle de la venta id `5` en el historial mostró 2 renglones, precio unitario `25000.00`, subtotal `50000.00` y total `78500.50`, idénticos a `GET /api/ventas/5`. **No se probó cambiando el precio del catálogo** (ver limitaciones). | OK / parcial |
+| **CP-07** | Recarga de página después de altas y ventas. | Tras recargar: 4 libros, 3 clientes y 3 ventas; catálogo con 4 filas; 0 ids de cliente y de venta repetidos; el cliente y la venta QA aparecen una sola vez. En toda la corrida se registraron 50 pedidos a `/api/`. | OK |
+| **CP-08** | Navegación por teclado y anchos de 320 px y 1280 px. | A 320 px: `305 <= 320` (sin scroll horizontal global), 5 contenedores de tabla con `overflow-x: auto` y 1 tabla que desborda dentro de su contenedor. A 1280 px: `1265 <= 1280` y los mismos contenedores. El tabulador recorre los 5 enlaces, el buscador y el botón de tema; el foco se ve (`outline` sólido de 3 px); Enter sobre «Clientes» abre la vista. | OK |
+| **Extra** | API bloqueada. | Con `/api` bloqueado se ve «No se pudo conectar con el servidor. Revisá tu conexión y recargá la página.». Al desbloquear y recargar, el catálogo vuelve con 4 filas (recuperación). | OK |
+
+### Casos no cubiertos y por qué
+
+- **Paginación con más de 20 libros**: el catálogo tiene 4 libros, así que «Siguiente» queda
+  deshabilitado y no se puede ejercitar el cambio de `offset`. Se verificó la lógica de
+  habilitación/deshabilitación y las etiquetas de página.
+- **Alta con ISBN nuevo**: la QA tenía prohibido crear libros. El camino de rechazo (`409`)
+  está verificado; el de éxito (`201` → alta, catálogo y selector) está implementado pero no
+  se probó contra la API.
+- **Email repetido en MAYÚSCULAS**: el backend compara el email tal cual contra su `UNIQUE`
+  (el front no lo pasa a minúsculas). Repetir un email con otra capitalización podría crear
+  un cliente duplicado; no se ejecutó porque implicaba una escritura extra fuera del límite
+  de la QA. Queda como riesgo conocido.
+- **Cambio de precio que afecte el historial**: no hay interfaz ni endpoint de edición de
+  precios en el front. La garantía se apoya en que los importes mostrados son los del
+  servidor (verificado contra `GET /api/ventas/5`), no en un recálculo local.
+- **Flujo Docker local**: la QA corrió contra la URL pública. La imagen y el workflow se
+  validaron por inspección (incluida la réplica del chequeo de assets de `index.html`); el
+  entorno local con Docker no se ejecutó en la máquina de QA porque no había Docker
+  instalado.
+- **CI en GitHub Actions**: no se ejecutó localmente; se verificó que la lista de assets del
+  smoke test coincide exactamente con los 11 archivos locales de `index.html` y que
+  `deploy.yml` es coherente con el `Dockerfile` y `default.conf.template`.
+
+---
+
+## 11. Evidencia
+
+Todo en `evidence/paso-7/`:
+
+| Archivo | Contenido |
 | --- | --- |
-| `Almacenamiento.cargar()` | Recupera lo guardado, siembra si no hay nada y redibuja las vistas. |
-| `Almacenamiento.guardar()` | Escribe las tres colecciones en `localStorage`. |
-| `Almacenamiento.restablecer()` | Borra lo guardado y vuelve a sembrar los ejemplos. |
-| `Almacenamiento.claves()` | Devuelve los nombres de las tres claves. |
+| `qa-resultados.json` | Resultado estructurado de la corrida final: 10 bloques, 58 verificaciones, importes y notas. |
+| `qa-consola-red.json` | Errores de consola, excepciones y las 74 entradas de red (método, URL, estado). |
+| `qa-ejecucion.txt` | Log completo, con la hora de cada verificación. |
+| `capturas/01…11` | Capturas de catálogo, estados, rechazos, venta, historial, 320 px, 1280 px y error de conexión. |
+| `curl-api-venta-5.txt` | `GET /api/ventas/5` (200) con la venta QA: fecha, cliente y renglones. |
+| `curl-api-health.txt`, `curl-api-libros.txt` | Respuestas del backend desplegado. |
+| `curl-front-index.txt`, `curl-front-api-js.txt` | Lo que sirve nginx para el HTML y para `api.js`. |
+| `qa-paso7.js` | Script de QA (Node + Chrome headless + DevTools Protocol, sin dependencias). |
+
+Cómo se generó: el script abre Chrome headless, se conecta por CDP, recorre las vistas con
+clics y teclado como un usuario, registra consola y red, y guarda capturas y JSON. Los
+bloques de escritura tenían un límite explícito (un cliente y una venta «QA Prueba Paso 7»,
+sin libros); en la corrida final ya existían y se reutilizaron.
+
+Los datos de la venta QA, según `GET /api/ventas/5`:
+
+- Fecha: `2026-11-13T16:10:16.691286Z`; total: `78500.50`.
+- Cliente: id `4`, «QA Prueba Paso 7», `qa.paso7@example.com`.
+- Renglones: Rayuela (libro `1`) 2 × `25000.00` = `50000.00`; Ficciones (libro `2`)
+  1 × `28500.50` = `28500.50`.
 
 ---
 
-## 4. Las cuatro condiciones del almacenamiento local (la limitación a conocer)
+## 12. Convenciones del proyecto
 
-El `localStorage` **no es una base de datos**: es un almacén del navegador, y eso tiene
-consecuencias que hay que conocer.
-
-1. **Depende del navegador.** Los datos viven en la instalación del navegador, en el
-   disco del equipo. No están en un servidor: si se borra el perfil del navegador, o se
-   desinstala o se reinstala el navegador, se pierden.
-2. **Depende del perfil del navegador.** Cada perfil (perfil normal, ventana de
-   incógnito, perfil de trabajo, otro navegador) tiene **su propio** almacén. Un dato
-   cargado en la ventana de incógnito no aparece en la ventana normal.
-3. **Depende de la ubicación de apertura.** El almacén se identifica por **origen**
-   (esquema + dominio + puerto). Por lo tanto:
-   - `file:///.../parcial1-prog3/index.html` → un almacén.
-   - `http://localhost:8080` → **otro** almacén.
-   - `https://<dominio-de-easypanel>` → **otro** almacén.
-
-   Los datos **no viajan** entre esos tres. Es la razón por la que el CP-06 tiene que
-   editarse en el mismo lugar donde se hizo la venta: si se abre la app por otra vía,
-   se ve otra cosa (en este caso, la semilla inicial).
-4. **No comparte información entre usuarios.** No hay servidor ni cuentas: cada
-   visitante del equipo tiene los datos de **su propio** navegador. Si dos compañeros
-   prueban la aplicación en la misma máquina con el mismo perfil, ven los mismos datos;
-   con perfiles o navegadores distintos, ven almacenes distintos. **Los datos de un
-   usuario no son visibles para otro**, y no hay forma de compartirlos ni de
-   sincronizarlos: no hay red en esta aplicación.
-
-> Consecuencia práctica: para probar el CP-06, hacé todo en la **misma pestaña, con la
-> misma URL y el mismo perfil**.
+- Sin frameworks, sin librerías, sin CDN, sin build tools y sin gestor de paquetes.
+- Nada de `innerHTML` con datos: siempre `textContent` y nodos creados a mano.
+- El front no inventa datos ni cálculos de importes: los libros, clientes, ventas y precios
+  salen de la API.
+- Trabajo directo sobre `main`, sin ramas; commits con Conventional Commits en español
+  (`feat(m05): …`, `docs(m06): …`).
+- Los módulos M01–M07 tienen sus especificaciones en `openspec/specs/` (con los changes
+  archivados en `openspec/changes/archive/`). Los pasos del TP Global se registran como
+  commits `feat(global-paso-N)` y su documentación vive en este README.
 
 ---
 
-## 5. Cómo se verificó
-
-Las ocho comprobaciones de la consigna se ejecutaron **en un navegador real
-(Google Chrome 155.0.8059.85 headless)**, automatizando las mismas acciones que haría una persona
-—escribir en los campos, hacer clic, presionar Tab y Enter, recargar, y editar la clave
-guardada desde la consola— con un script que maneja el navegador por el **DevTools
-Protocol** (Node.js, sin dependencias).
-
-El script se ejecutó sobre una **copia del proyecto en una carpeta temporal**, para no
-alterar el repositorio ni el `localStorage` del navegador de desarrollo.
-
-> La corrida final se hizo sobre la versión integrada de todos los módulos (con el tema
-> claro/oscuro de M07 ya incorporado) y volvió a dar **13 de 13 casos aprobados, 99 pasos
-> y 0 errores de consola**.
-
-Método por caso:
-
-| Tipo de prueba | Cómo se ejecutó |
-| --- | --- |
-| Búsqueda | Se escribió en `#buscador-catalogo` y se comprobó la cantidad de filas y el mensaje. |
-| Altas | Se rellenó el formulario, se envió con `requestSubmit()` y se leyó el mensaje y los listados. |
-| Ventas | Se eligieron cliente y libro, se hizo clic en «Agregar el libro al ticket» y en «Confirmar la venta», y se leyeron el ticket, el total, `Datos.ventas` y `localStorage`. |
-| CP-06 | Se editó **sólo** el campo `precio` de `lib-01` dentro de `libreria.libros` (sin tocar `libreria.ventas`), se recargó y se revisó el historial. |
-| Anchos | Se fijó el viewport en 320 px y 1280 px y se midió `scrollWidth` del documento y de los contenedores de tabla. |
-| Teclado | Se enviaron pulsaciones reales de Tab y Enter y se registró `document.activeElement`, `:focus-visible` y el `outline` calculado. |
-
-Total: **13 casos y 99 pasos verificados**, todos en verde y **sin errores de consola**
-(0 excepciones y 0 `console.error` durante toda la corrida).
-
-### 5.1 Verificación de la reorganización de la estructura del repositorio
-
-La reorganización de carpetas (`css/`, `js/nucleo/`, `js/modulos/`, `docs/`) **no
-cambia el comportamiento de la aplicación**, así que se verificó exactamente eso: que
-la app siga funcionando igual antes y después de mover los archivos.
-
-**Cómo se hizo:** el arnés quedó **fuera del repositorio** (en una carpeta temporal),
-sirve una **copia** del proyecto con un servidor estático y maneja Chrome headless por
-el **DevTools Protocol** (Node.js, sin dependencias). Se corrió **dos veces** con el
-mismo arnés: una sobre la estructura vieja (**línea base**) y otra sobre la nueva.
-Ninguna de las dos copias tocó el repositorio ni el `localStorage` del navegador de
-desarrollo.
-
-| #    | Comprobación                                                                                      | Antes del cambio | Después del cambio |
-| ---- | -------------------------------------------------------------------------------------------------- | ---------------- | ------------------ |
-| C01  | Requests HTTP con status >= 400                                                                    | 0                | 0                  |
-| C02  | Excepciones y `console.error`                                                                     | 0                | 0                  |
-| C03  | Catálogo: 6 libros renderizados, sin mensaje de vacío ni de error                                  | aprobado         | aprobado           |
-| C04  | Buscador: parcial insensible a mayúsculas, vacío = todo, inexistente = mensaje                     | aprobado         | aprobado           |
-| C05  | Navegación: las 5 vistas se muestran de a una por hash                                             | aprobado         | aprobado           |
-| C06  | Tema: alterna claro/oscuro y persiste tras recargar                                                | aprobado         | aprobado           |
-| C07  | Alta de libro: ISBN duplicado rechazado, ISBN nuevo aceptado y visible                             | aprobado         | aprobado           |
-| C08  | Alta de cliente: email inválido y duplicado rechazados, email nuevo aceptado                        | aprobado         | aprobado           |
-| C09  | Venta: rechazos (sin cliente, cantidades inválidas, duplicado) y venta válida 3000 + 2000 = 5000    | aprobado         | aprobado           |
-| C10  | Historial: muestra la venta con su detalle desplegado                                              | aprobado         | aprobado           |
-| C11  | CP-06: el precio del catálogo cambia, la venta guardada no                                         | aprobado         | aprobado           |
-| C12  | Recarga: los datos vuelven sin duplicar semillas ni ventas                                         | aprobado         | aprobado           |
-
-**Resultado: 12 de 12 comprobaciones aprobadas en las dos corridas, 0 errores de
-consola y 0 requests fallidos.** En la corrida posterior al cambio, el navegador pidió
-los 11 assets **por sus rutas nuevas** (`/css/style.css`, `/css/tema.css`,
-`/js/nucleo/...`, `/js/modulos/...`) y todas respondieron 200.
-
-**Smoke test del CI (verificado contra la imagen real, no en teoría):**
-
-- `docker build` de la imagen: entran `index.html` y los 11 assets, y **no entra ningún
-  `.md`** (tampoco `docs/DEPLOY.md`, que antes quedaba en la imagen).
-- El paso «Smoke test» del workflow se ejecutó **tal cual** contra el contenedor: `GET /`
-  devuelve el sitio y **las 11 rutas de assets responden 200** → el paso termina con
-  `exit 0`.
-- Con una ruta inexistente, el paso emite `::error::No se pudo cargar el asset <ruta>` y
-  **termina con `exit 1`**: un asset roto frena el deploy.
-- El paso de cobertura compara la lista de assets del smoke test con las rutas `src`/`href`
-  locales de `index.html`; si difieren (una omisión o un duplicado), el job falla.
-
-**Corrida real del pipeline (no una reproducción local):** el `push` a `main` disparó el
-workflow «Deploy a la VPS» (run `39641329934`), que terminó en **success**:
-
-| Job | Resultado | Pasos clave |
-| --- | --- | --- |
-| Verificar imagen Docker | success | build de la imagen, smoke test de los 11 assets y paso de cobertura, los tres en verde |
-| Desplegar en EasyPanel | success | webhook de deploy disparado con respuesta 2xx |
-
-O sea: el blindaje del CI quedó comprobado **en el runner de GitHub**, no sólo contra un
-contenedor local. A partir de ese push, un asset roto frena el deploy antes de llegar a
-producción.
-
----
-
-## 6. Registro de las ocho comprobaciones manuales
-
-> Cada caso indica **qué se hizo**, **qué se esperaba** y **qué se observó realmente**.
-> Ningún caso se da por aprobado sin haberse ejecutado.
-
-### CP-01 — Búsqueda por título: mayúsculas, búsqueda vacía y texto inexistente
-
-**Qué se hizo:** en el buscador del catálogo se buscó `RAYUELA`, luego se vació el
-campo y luego se buscó un texto inexistente. Se repitió con espacios alrededor.
-
-| Verificación | Esperado | Observado |
-| --- | --- | --- |
-| Buscar «RAYUELA» en mayúsculas | 1 resultado | 1 resultado |
-| Aviso de «sin resultados» al hay coincidencia | vacío | vacío |
-| Búsqueda vacía | 6 libros | 6 libros |
-| Texto inexistente | 0 filas | 0 filas |
-| Aviso de «sin resultados» | visible | visible |
-| `  rAyUeLa  ` (espacios + mayúsculas) | 1 resultado | 1 resultado |
-
-**Resultado: APROBADO.**
-
-### CP-02 — Alta de libro: ISBN existente y ISBN nuevo
-
-**Qué se hizo:** se intentó dar de alta *Libro repetido* con el ISBN `9788437604572`
-(ya existente) y luego *Cien años de soledad* con el ISBN `9780307474728` (nuevo),
-completando editorial, género y autores en ambos casos.
-
-| Verificación | Esperado | Observado |
-| --- | --- | --- |
-| Alta con ISBN existente | mensaje de error | mensaje de error |
-| Libros en el catálogo tras el rechazo | 6 | 6 |
-| Alta con ISBN nuevo | mensaje de éxito | mensaje de éxito |
-| Libros en el catálogo tras el alta | 7 | 7 |
-| El libro aparece en la tabla del catálogo | sí | sí |
-| El libro aparece en el selector de la vista Ventas | sí | sí |
-
-**Resultado: APROBADO.**
-
-### CP-03 — Alta de cliente: email inválido, email existente en mayúsculas y email nuevo
-
-**Qué se hizo:** se intentó dar de alta un cliente con email `esto-no-es-un-email`, otro
-con `ANA.GOMEZ@EXAMPLE.COM` (existente, todo en mayúsculas) y otro con
-`diego.ramirez@example.com` (nuevo).
-
-| Verificación | Esperado | Observado |
-| --- | --- | --- |
-| Email inválido | mensaje de error | mensaje de error |
-| Email existente en mayúsculas | mensaje de error | mensaje de error |
-| Clientes tras los rechazos | 3 | 3 |
-| Email nuevo | mensaje de éxito | mensaje de éxito |
-| Clientes tras el alta | 4 | 4 |
-| El selector de clientes de Ventas se repobló | 5 opciones | 5 opciones |
-
-**Resultado: APROBADO.**
-
-### CP-04 — Venta: sin cliente, cantidad inválida y libro repetido
-
-**Qué se hizo:** se agregó Rayuela × 2 al ticket y se intentó confirmar sin elegir
-cliente. Después se intentó agregar con cantidad `0`, `-1` y `1.5`, y finalmente se
-intentó agregar Rayuela otra vez.
-
-| Verificación | Esperado | Observado |
-| --- | --- | --- |
-| Se agrega el primer renglón | 1 | 1 |
-| Confirmar sin cliente | se rechaza | se rechaza |
-| Ventas registradas | 0 | 0 |
-| Cantidad `0` | se rechaza | se rechaza |
-| Ticket tras el intento con `0` | 1 renglón | 1 renglón |
-| Cantidad `-1` | se rechaza | se rechaza |
-| Ticket tras el intento con `-1` | 1 renglón | 1 renglón |
-| Cantidad `1.5` | se rechaza | se rechaza |
-| Ticket tras el intento con `1.5` | 1 renglón | 1 renglón |
-| Libro repetido | se avisa duplicado | se avisa duplicado |
-| Renglones tras el duplicado | 1 | 1 |
-| Ventas registradas al final | 0 | 0 |
-
-**Resultado: APROBADO.**
-
-### CP-05 — Venta válida: 2 × $1500 y 1 × $2000
-
-**Qué se hizo:** se eligió a *Ana María Gómez*, se agregó Rayuela × 2 y El túnel × 1, y
-se confirmó la venta.
-
-| Verificación | Esperado | Observado |
-| --- | --- | --- |
-| Subtotal del primer renglón | `3000.00` | `3000.00` |
-| Total del ticket con un renglón | `3000.00` | `3000.00` |
-| Total del ticket con los dos renglones | `5000.00` | `5000.00` |
-| Confirmación | mensaje de éxito | mensaje de éxito |
-| `total` de la venta guardada | 5000 | 5000 |
-| `subtotal` del renglón 1 | 3000 | 3000 |
-| `subtotal` del renglón 2 | 2000 | 2000 |
-| `precioUnitario` del renglón 1 | 1500 | 1500 |
-| Filas en el historial | 1 | 1 |
-| Venta persistida en `libreria.ventas` | total 5000 | total 5000 |
-| Renglón persistido | subtotal 3000 | subtotal 3000 |
-
-**Resultado: APROBADO.**
-
-### CP-06 — El precio histórico no cambia si se edita el precio del catálogo guardado
-
-**Qué se hizo:** con la venta de CP-05 ya confirmada y guardada, se editó **únicamente**
-el campo `precio` de `lib-01` (Rayuela) dentro de la clave `libreria.libros`, de `1500`
-a `9999`. **No se tocó `libreria.ventas`.** Después se recargó la página y se revisó el
-historial.
-
-| Verificación | Esperado | Observado |
-| --- | --- | --- |
-| Precio de `lib-01` antes de editar | 1500 | 1500 |
-| `libreria.ventas` intacta durante la edición | 1 venta | 1 venta |
-| Precio del catálogo tras recargar | 9999 | 9999 |
-| `precioUnitario` de la venta recuperada | 1500 | 1500 |
-| `subtotal` del renglón 1 | 3000 | 3000 |
-| `subtotal` del renglón 2 | 2000 | 2000 |
-| `total` de la venta recuperada | 5000 | 5000 |
-| El botón «Ver detalle» despliega el detalle | sí | sí |
-| El detalle muestra «1500.00» como precio unitario | sí | sí |
-| El detalle muestra «3000.00» y «2000.00» como subtotales | sí | sí |
-
-**Resultado: APROBADO.**
-
-#### Cómo reproducirlo a mano (para el docente)
-
-1. Abrir la app y realizar una venta (por ejemplo, 2 × Rayuela y 1 × El túnel), y
-   confirmarla.
-2. Abrir la consola del navegador con `F12` → pestaña **Application** (Chrome) o
-   **Almacenamiento** (Firefox) → **Local Storage** → elige el origen desde el que
-   abriste la app.
-3. En la clave **`libreria.libros`** (no en `libreria.ventas`) editá el valor del
-   campo `"precio"` del objeto con `"id":"lib-01"`: pasalo de `1500` a `9999`. Guardá.
-4. Recargá la página (`F5`).
-5. Entrá a **Historial**, desplegá el detalle de la venta con el botón «Ver detalle»:
-   el precio unitario sigue siendo `1500.00`, los subtotales `3000.00` y `2000.00`, y el
-   total `5000.00`.
-6. En cambio, en el **Catálogo**, Rayuela ahora muestra `9999.00`: el catálogo sí
-   cambió, la venta registrada no.
-
-> Si al recargar los datos no aparecen, es que se abrió la app por **otra URL** (por
-> ejemplo `http://localhost:8080` en lugar del `file://` original). Son almacenes
-> distintos. Volvé a abrirla exactamente como la abriste antes.
-
-### CP-07 — Recarga de la página: los datos vuelven sin duplicar los registros
-
-**Qué se hizo:** con 7 libros, 4 clientes y 1 venta guardados, se recargó la página y se
-comparó el estado antes y después.
-
-| Verificación | Esperado | Observado |
-| --- | --- | --- |
-| Cantidad de libros | 7 | 7 |
-| Cantidad de clientes | 4 | 4 |
-| Cantidad de ventas | 1 | 1 |
-| Ids de libro repetidos | 0 | 0 |
-| Ids de cliente repetidos | 0 | 0 |
-| Ids de venta repetidos | 0 | 0 |
-| Ids antes y después | iguales | iguales |
-| Claves en `localStorage` | 3 | 3 |
-| Claves presentes | las 3 esperadas | las 3 esperadas |
-| Total de registros guardados vs. en pantalla | 12 | 12 |
-
-**Resultado: APROBADO.**
-
-### CP-08 — Navegación por teclado y anchos de 320 px y 1280 px
-
-**Qué se hizo:** se fijó el viewport en 320 px y 1280 px midiendo el desbordamiento
-horizontal del documento y de los contenedores de tabla. Después se recorrió la
-aplicación con el tabulador y se activó cada vista con `Enter` sobre su enlace.
-
-| Verificación | Esperado | Observado |
-| --- | --- | --- |
-| A 320 px: scroll horizontal global de la página | no | no |
-| A 320 px: `overflow-x` del contenedor de tabla | `auto` | `auto` |
-| A 320 px: la tabla desborda dentro de su contenedor | sí | sí |
-| A 1280 px: scroll horizontal global de la página | no | no |
-| A 1280 px: `overflow-x` del contenedor de tabla | `auto` | `auto` |
-| A 1280 px: la tabla no desborda su contenedor | no | no |
-| El tabulador recorre los 5 enlaces de navegación | sí | sí |
-| El tabulador alcanza el buscador del catálogo | sí | sí |
-| `Enter` sobre «Libros» abre la vista Libros | sí | sí |
-| El tabulador alcanza `libro-titulo` | sí | sí |
-| Controles de la vista Libros con foco visible | 0 sin foco visible | 0 |
-| Controles de la vista Libros con contorno de 2px | 0 sin contorno | 0 |
-| `Enter` sobre «Clientes» abre la vista Clientes | sí | sí |
-| El tabulador alcanza `cliente-nombre` | sí | sí |
-| Controles de la vista Clientes con foco visible | 0 sin foco visible | 0 |
-| Controles de la vista Clientes con contorno de 2px | 0 sin contorno | 0 |
-| `Enter` sobre «Ventas» abre la vista Ventas | sí | sí |
-| El tabulador alcanza `venta-cliente` | sí | sí |
-| Controles de la vista Ventas con foco visible | 0 sin foco visible | 0 |
-| Controles de la vista Ventas con contorno de 2px | 0 sin contorno | 0 |
-
-**Resultado: APROBADO.**
-
----
-
-## 7. Casos de robustez adicionales (M06)
-
-Estos casos no están pedidos por la consigna, pero verifican el comportamiento de la
-persistencia ante situaciones anómalas. También se ejecutaron.
-
-| # | Situación | Resultado observado |
-| --- | --- | --- |
-| R-01 | `libreria.libros` con un JSON inválido (`{esto-no-es-json`) | Se avisa el error de lectura en `#mensaje-catalogo-error`, el catálogo vuelve a las 6 semillas y la clave queda reparada. |
-| R-02 | `libreria.clientes` con un objeto que no es una lista (`{"a":1}`) | Se avisa el error de lectura y los clientes vuelven a las 3 semillas. |
-| R-03 | El navegador bloquea `localStorage` (se simuló con un `localStorage` que lanza) | Se muestra el mensaje «El almacenamiento local no está disponible en este navegador…» y la aplicación sigue funcionando con los datos en memoria. |
-| R-04 | `Almacenamiento.restablecer()` | Borra las tres claves y vuelve a sembrar: 6 libros, 3 clientes, 0 ventas, y Rayuela vuelve a `1500` (descartando el `9999` editado). |
-| R-05 | Un libro guardado con el precio como texto (`"precio": "1500"`) | Se restaura con `precio === 1500` **de tipo número**, el catálogo completo sigue validando y no se muestra ningún error de lectura. |
-| F-01 | La app abierta con `file://` en lugar de `http://` | El almacenamiento local también funciona: tras recargar siguen los 6 libros, 3 clientes y 0 ventas, **sin duplicar**. Es un almacén **distinto** del de `http://localhost:8080`. |
-
----
-
-## 8. Limitaciones conocidas
-
-- **Los datos son del navegador, no del usuario.** No hay cuentas ni sincronización: cada
-  navegador y cada perfil guarda lo suyo (ver la sección 4).
-- **No hay servidor.** No se puede compartir el estado entre dispositivos ni recuperar
-  los datos si se borra el perfil del navegador.
-- **El ticket en construcción no se guarda.** Solo se persisten las ventas confirmadas.
-  Si se recarga la página con un ticket a medio armar, ese ticket se pierde.
-- **No hay pantalla de edición de precios.** El CP-06 se hace editando la clave
-  guardada desde la consola o las herramientas de desarrollo, como se documenta arriba.
-- **Los datos guardados se validan por estructura.** Si alguien edita a mano una clave
-  guardada y deja un registro incompleto, esa colección entera se descarta y se repone
-  con la semilla (con aviso en pantalla).
-
----
-
-## 9. Trazabilidad
-
-### 9.1 Módulo de persistencia (M06)
-
-La especificación de este módulo vive en
-`openspec/changes/archive/2026-10-21-m06-persistencia-y-pruebas/` (propuesta, diseño,
-tareas y especificación) y, ya archivada, en
-`openspec/specs/06-persistencia-y-pruebas/spec.md`. Cada requisito de la consigna del
-Ejercicio 6 está mapeado a un requisito verificable de esa especificación.
-
-### 9.2 Organización del repositorio
-
-La reorganización de carpetas está especificada en el change
-`openspec/changes/archive/2026-10-21-reorganizacion-estructura-repo/` (propuesta,
-diseño, 37 tareas y los cinco delta specs) y, ya sincronizada, en la capability
-`openspec/specs/08-organizacion-repositorio/spec.md`. Esa capability fija:
-
-- las carpetas `css/`, `js/nucleo/`, `js/modulos/` y `docs/`, y qué va en cada una;
-- los archivos que **deben permanecer en la raíz** (`index.html`, `Dockerfile`,
-  `nginx.conf`, `docker-compose.yml`, `.dockerignore`);
-- el **orden de carga** de los scripts, que no es libre: `data.js` antes que
-  `catalogo.js`, `storage.js` al último y `tema.js` bloqueante en el `<head>`;
-- la verificación de **cada asset** en el pipeline y la exclusión de la documentación de
-  la imagen publicada;
-- la inmutabilidad de `openspec/changes/archive/`, que es el registro histórico.
-
-Los cambios de rutas que esas specs nombraban están trazados además en las specs
-sincronizadas de `02-estilos-responsivos`, `03-modelo-datos-catalogo`,
-`04-formularios-altas` y `07-tema-claro-oscuro`.
-
+## 13. Limitaciones conocidas
+
+- **Paginación de ventas**: el listado pide 20 y no conoce el total; «Siguiente» se habilita
+  sólo si la página vino completa. Es suficiente para el volumen actual (3 ventas).
+- **Email único sin normalizar**: el `UNIQUE` del backend distingue mayúsculas de minúsculas;
+  el front envía el email recortado y tal cual se escribió. Un email repetido con otra
+  capitalización podría duplicarse.
+- **Catálogo con pedidos por fila**: para mostrar los autores, el catálogo pide el detalle de
+  cada libro de la página (hasta 20 pedidos por página). Es aceptable para este tamaño y
+  evita una respuesta más pesada del listado.
+- **Sin edición de precios**: no hay interfaz para modificar el precio de un libro; el
+  historial conserva los importes porque los recibe del servidor al registrar la venta.
+- **CI sin backend**: el workflow valida la imagen y los assets, pero no la API; esa
+  verificación se hace contra el despliegue (sección 10).

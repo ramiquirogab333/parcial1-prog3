@@ -1,0 +1,4 @@
+GET /api/ventas/5
+HTTP 200 application/json
+
+{"id":5,"fecha":"2026-11-13T16:10:16.691286Z","total":"78500.50","cliente":{"id":4,"nombre":"QA Prueba Paso 7","email":"qa.paso7@example.com"},"renglones":[{"libro_id":1,"titulo":"Rayuela","cantidad":2,"precio_unitario":"25000.00","subtotal":"50000.00"},{"libro_id":2,"titulo":"Ficciones","cantidad":1,"precio_unitario":"28500.50","subtotal":"28500.50"}]}

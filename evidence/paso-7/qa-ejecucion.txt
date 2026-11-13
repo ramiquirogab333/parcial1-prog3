@@ -1,0 +1,91 @@
+[2026-11-13T16:40:29.453Z] Chrome iniciado (pid 16168).
+[2026-11-13T16:40:29.913Z] Chrome: Chrome/156.0.8078.82
+[2026-11-13T16:40:30.020Z] Cargando la app...
+[2026-11-13T16:40:31.865Z] App cargada: filas de catálogo = 4
+[2026-11-13T16:40:32.605Z] Línea base: {"libros":4,"clientes":3,"ventas":3,"titulos":["Rayuela","Ficciones","Los que aman, odian","Respiración artificial"],"isbn":["978-950-07-0001-1","978-950-00-0007-3","978-950-00-0006-6","978-950-07-0002-8"],"precios":["25000.00","28500.50","21000.00","27000.00"],"emails":["ana@example.com","tomas@example.com","qa.paso7@example.com"],"ventaIds":["1","4","5"]}
+[2026-11-13T16:40:32.617Z] --- CP-01 · Búsqueda por título: mayúsculas, espacios, vacía e inexistente ---
+[2026-11-13T16:40:33.485Z] OK    · Buscar «RAYU» en mayúsculas | esperado: 1 resultado(s) | observado: 1 resultado(s)
+[2026-11-13T16:40:33.487Z] OK    · Los resultados contienen «rayu» en el título | esperado: todos | observado: ["Rayuela"]
+[2026-11-13T16:40:34.002Z] OK    · Buscar «  rayu  » (espacios + minúsculas) | esperado: mismos resultados que «RAYU» | observado: 1 resultado(s)
+[2026-11-13T16:40:34.781Z] OK    · Búsqueda vacía | esperado: 4 libros | observado: 4 libros
+[2026-11-13T16:40:34.782Z] OK    · Aviso de «sin resultados» con búsqueda vacía | esperado: vacío | observado: (vacío)
+[2026-11-13T16:40:35.308Z] OK    · Texto inexistente | esperado: 0 filas | observado: 0 filas
+[2026-11-13T16:40:35.309Z] OK    · Aviso de «sin resultados» visible | esperado: con texto | observado: No se encontraron libros cuyo título coincida con la búsqueda.
+[2026-11-13T16:40:35.462Z] Captura guardada: 02-catalogo-sin-resultados.png
+[2026-11-13T16:40:36.247Z] OK    · Peticiones de búsqueda a /api/libros/ con «titulo» | esperado: >= 3 | observado: 3
+[2026-11-13T16:40:36.385Z] Captura guardada: 01-catalogo.png
+[2026-11-13T16:40:36.388Z] --- CP-01b · Paginación del catálogo ---
+[2026-11-13T16:40:36.715Z] OK    · Página inicial | esperado: Página 1 | observado: Página 1
+[2026-11-13T16:40:36.716Z] OK    · Botón «Anterior» deshabilitado en la primera página | esperado: deshabilitado | observado: deshabilitado
+[2026-11-13T16:40:36.717Z] OK    · Botón «Siguiente» con menos de 20 libros | esperado: deshabilitado | observado: deshabilitado
+[2026-11-13T16:40:36.718Z] NOTA · No hay segunda página: la API devolvió 4 libros para limit=20, así que no se pudo probar el cambio de offset. Queda como no probado.
+[2026-11-13T16:40:36.720Z] --- CP-02 · Alta de libro: ISBN existente ---
+[2026-11-13T16:40:37.567Z] OK    · ISBN existente («978-950-07-0001-1») | esperado: rechazado con mensaje | observado: No se pudo dar de alta el libro: Ya existe un libro con ese ISBN
+[2026-11-13T16:40:37.571Z] OK    · Respuesta del servidor para el ISBN repetido | esperado: 409 | observado: 409
+[2026-11-13T16:40:37.572Z] OK    · Cantidad de libros tras el rechazo | esperado: 4 | observado: 4
+[2026-11-13T16:40:37.573Z] NOTA · No se probó el alta con ISBN nuevo: esta corrida tenía prohibido crear libros.
+[2026-11-13T16:40:37.685Z] Captura guardada: 03-cp02-isbn-duplicado.png
+[2026-11-13T16:40:37.688Z] --- CP-03 · Alta de cliente: email inválido, duplicado y nuevo ---
+[2026-11-13T16:40:38.948Z] OK    · Email inválido | esperado: rechazado en el navegador | observado: No se pudo dar de alta el cliente: El formato del email no es válido (ejemplo: nombre@dominio.com).
+[2026-11-13T16:40:38.949Z] OK    · No se envía POST con email inválido | esperado: 0 POST | observado: 0
+[2026-11-13T16:40:38.950Z] OK    · Clientes tras el email inválido | esperado: 3 | observado: 3
+[2026-11-13T16:40:39.300Z] OK    · Email existente («ana@example.com») | esperado: rechazado con mensaje del servidor | observado: No se pudo dar de alta el cliente: Ya existe un cliente con ese email
+[2026-11-13T16:40:39.302Z] OK    · Respuesta del servidor para el email repetido | esperado: 409 | observado: 409
+[2026-11-13T16:40:39.304Z] OK    · Clientes tras el email repetido | esperado: 3 | observado: 3
+[2026-11-13T16:40:39.305Z] NOTA · No se probó el email existente EN MAYÚSCULAS: el backend no normaliza mayúsculas y el intento podía crear un cliente extra, fuera del límite de esta corrida.
+[2026-11-13T16:40:39.388Z] NOTA · Ya existía un cliente «QA Prueba Paso 7» (qa.paso7@example.com); se reutiliza y no se crea otro.
+[2026-11-13T16:40:39.395Z] OK    · El cliente QA aparece en la tabla | esperado: 1 fila | observado: 1
+[2026-11-13T16:40:39.398Z] OK    · El cliente QA aparece en el selector de Ventas | esperado: sí | observado: sí
+[2026-11-13T16:40:39.543Z] Captura guardada: 04-cp03-cliente.png
+[2026-11-13T16:40:39.546Z] --- CP-04 · Venta: sin cliente, cantidades inválidas y libro repetido ---
+[2026-11-13T16:40:39.897Z] OK    · Agregar el primer renglón | esperado: 1 renglón | observado: 1
+[2026-11-13T16:40:40.507Z] OK    · Confirmar sin cliente | esperado: se rechaza | observado: No se pudo confirmar la venta: Elegí un cliente para confirmar la venta.
+[2026-11-13T16:40:40.508Z] OK    · No se envía POST sin cliente | esperado: 0 POST | observado: 0
+[2026-11-13T16:40:41.027Z] OK    · Cantidad «0» | esperado: se rechaza y el ticket sigue con 1 renglón | observado: La cantidad debe ser un número entero mayor que cero. · 1 renglón(es)
+[2026-11-13T16:40:41.556Z] OK    · Cantidad «-1» | esperado: se rechaza y el ticket sigue con 1 renglón | observado: La cantidad debe ser un número entero mayor que cero. · 1 renglón(es)
+[2026-11-13T16:40:42.081Z] OK    · Cantidad «1.5» | esperado: se rechaza y el ticket sigue con 1 renglón | observado: La cantidad debe ser un número entero mayor que cero. · 1 renglón(es)
+[2026-11-13T16:40:42.597Z] OK    · Libro repetido en el ticket | esperado: se avisa y no se duplica el renglón | observado: «Rayuela» ya está en el ticket. Cambiá su cantidad en la tabla de renglones. · 1 renglón(es)
+[2026-11-13T16:40:42.708Z] Captura guardada: 05-cp04-rechazos.png
+[2026-11-13T16:40:42.711Z] --- CP-05 · Venta válida con dos renglones e importes del servidor ---
+[2026-11-13T16:40:43.249Z] NOTA · Ya existía una venta del cliente QA (id 5), dada de alta desde la interfaz en la sesión de QA; en esta corrida se reutiliza y no se crea otra.
+[2026-11-13T16:40:43.251Z] OK    · Venta del cliente QA presente en el listado del servidor | esperado: 1 | observado: 1
+[2026-11-13T16:40:43.253Z] OK    · Id de la venta reutilizada | esperado: 5 | observado: 5
+[2026-11-13T16:40:43.255Z] OK    · Total de la venta en el servidor | esperado: 78500.50 | observado: 78500.50
+[2026-11-13T16:40:43.256Z] OK    · Renglones del detalle del servidor | esperado: 2 | observado: 2
+[2026-11-13T16:40:43.743Z] Captura guardada: 06-cp05-venta.png
+[2026-11-13T16:40:43.747Z] --- CP-06 · Historial y detalle con importes históricos del servidor ---
+[2026-11-13T16:40:44.162Z] OK    · Botón «Ver detalle» de la venta QA | esperado: encontrado | observado: sí
+[2026-11-13T16:40:44.429Z] OK    · Detalle desplegado en el historial | esperado: tabla con renglones | observado: 2 renglón(es)
+[2026-11-13T16:40:44.430Z] OK    · Precio unitario del detalle vs. servidor | esperado: 25000.00 | observado: 25000.00
+[2026-11-13T16:40:44.431Z] OK    · Subtotal del detalle vs. servidor | esperado: 50000.00 | observado: 50000.00
+[2026-11-13T16:40:44.436Z] OK    · Total del detalle vs. servidor | esperado: 78500.50 | observado: 78500.50
+[2026-11-13T16:40:44.438Z] NOTA · No se probó el escenario de cambiar el precio del catálogo: no hay UI ni endpoint de edición de precios en el front, y esta corrida no podía modificar libros. Se verificó que los importes mostrados son los del servidor y no se recalculan con el catálogo.
+[2026-11-13T16:40:44.582Z] Captura guardada: 07-cp06-historial-detalle.png
+[2026-11-13T16:40:44.589Z] --- CP-07 · Recarga de la página sin duplicar registros ---
+[2026-11-13T16:40:52.854Z] OK    · Libros antes y después de recargar | esperado: 4 | observado: 4
+[2026-11-13T16:40:52.855Z] OK    · Clientes antes y después de recargar | esperado: 3 | observado: 3
+[2026-11-13T16:40:52.856Z] OK    · Ventas antes y después de recargar | esperado: 3 | observado: 3
+[2026-11-13T16:40:52.856Z] OK    · Catálogo dibujado tras recargar | esperado: 4 filas | observado: 4 filas
+[2026-11-13T16:40:52.858Z] OK    · Ids de cliente repetidos | esperado: 0 | observado: 0
+[2026-11-13T16:40:52.858Z] OK    · Ids de venta repetidos | esperado: 0 | observado: 0
+[2026-11-13T16:40:52.862Z] OK    · Cliente QA tras recargar | esperado: 1 | observado: 1
+[2026-11-13T16:40:52.863Z] OK    · Venta QA tras recargar | esperado: 1 | observado: 1
+[2026-11-13T16:40:52.864Z] OK    · Peticiones a /api/ registradas en toda la corrida | esperado: > 0 | observado: 50
+[2026-11-13T16:40:53.003Z] Captura guardada: 08-cp07-recarga.png
+[2026-11-13T16:40:53.006Z] --- CP-08 · Navegación por teclado y anchos de 320 px y 1280 px ---
+[2026-11-13T16:40:54.063Z] OK    · A 320 px: sin scroll horizontal global | esperado: scrollWidth <= innerWidth | observado: 305 <= 320
+[2026-11-13T16:40:54.065Z] OK    · A 320 px: contenedores de tabla con overflow-x auto | esperado: todos auto | observado: ["auto","auto","auto","auto","auto"]
+[2026-11-13T16:40:54.065Z] OK    · A 320 px: al menos una tabla desborda dentro de su contenedor | esperado: >= 1 | observado: 1
+[2026-11-13T16:40:54.128Z] Captura guardada: 09-cp08-320px.png
+[2026-11-13T16:40:54.851Z] OK    · A 1280 px: sin scroll horizontal global | esperado: scrollWidth <= innerWidth | observado: 1265 <= 1280
+[2026-11-13T16:40:54.852Z] OK    · A 1280 px: contenedores de tabla con overflow-x auto | esperado: todos auto | observado: ["auto","auto","auto","auto","auto"]
+[2026-11-13T16:40:54.998Z] Captura guardada: 10-cp08-1280px.png
+[2026-11-13T16:40:55.980Z] OK    · El tabulador recorre los enlaces del nav | esperado: >= 5 enlaces | observado: ["buscador-catalogo","enlace-catalogo","enlace-libros","enlace-clientes","enlace-ventas","enlace-historial","btn-tema"]
+[2026-11-13T16:40:55.981Z] OK    · El tabulador alcanza el botón de tema | esperado: btn-tema | observado: ["buscador-catalogo","enlace-catalogo","enlace-libros","enlace-clientes","enlace-ventas","enlace-historial","btn-tema"]
+[2026-11-13T16:40:56.323Z] OK    · Foco visible en el campo de nombre de cliente | esperado: outline o sombra visible | observado: {"id":"cliente-nombre","focusVisible":true,"outlineStyle":"solid","outlineWidth":"3px","boxShadow":"none"}
+[2026-11-13T16:40:56.932Z] OK    · Enter sobre «Clientes» abre la vista Clientes | esperado: visible | observado: visible
+[2026-11-13T16:40:56.936Z] --- EXTRA · Estado visible cuando la API no responde ---
+[2026-11-13T16:40:57.574Z] OK    · Mensaje de error visible al bloquear /api/ | esperado: con texto | observado: No se pudo conectar con el servidor. Revisá tu conexión y recargá la página.
+[2026-11-13T16:40:57.736Z] Captura guardada: 11-error-conexion.png
+[2026-11-13T16:40:58.646Z] OK    · La app se recupera al desbloquear /api/ | esperado: catálogo con datos | observado: 4 filas
+[2026-11-13T16:40:59.071Z] Fin de la QA. Estado: completado

@@ -1,0 +1,13 @@
+HTTP/1.1 200 OK
+Cache-Control: no-cache
+Content-Type: application/json
+Cross-Origin-Opener-Policy: same-origin
+Date: Fri, 13 Nov 2026 15:50:43 GMT
+Referrer-Policy: no-referrer
+Server: nginx
+Vary: Accept-Encoding
+X-Content-Type-Options: nosniff
+X-Frame-Options: SAMEORIGIN
+Transfer-Encoding: chunked
+
+[{"id":1,"isbn":"978-950-07-0001-1","titulo":"Rayuela","precio":"25000.00","stock":7,"editorial_id":1,"genero_id":1,"editorial":{"id":1,"nombre":"Sudamericana","pais":"Argentina"},"genero":{"id":1,"nombre":"Ficción"}},{"id":2,"isbn":"978-950-00-0007-3","titulo":"Ficciones","precio":"28500.50","stock":9,"editorial_id":1,"genero_id":1,"editorial":{"id":1,"nombre":"Sudamericana","pais":"Argentina"},"genero":{"id":1,"nombre":"Ficción"}},{"id":3,"isbn":"978-950-00-0006-6","titulo":"Los que aman, odian","precio":"21000.00","stock":4,"editorial_id":1,"genero_id":1,"editorial":{"id":1,"nombre":"Sudamericana","pais":"Argentina"},"genero":{"id":1,"nombre":"Ficción"}}]

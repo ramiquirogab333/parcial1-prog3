@@ -1,0 +1,678 @@
+{
+  "erroresDeConsola": [
+    {
+      "ts": "2026-11-13T16:40:57.381Z",
+      "tipo": "error",
+      "texto": "API: no se pudieron cargar los datos. Error: No se pudo conectar con el servidor. Revisá tu conexión y recargá la página.\n    at exigirLista (https://libreria.francogagliardi.me/js/nucleo/api.js:248:13)\n    at listarTodo (https://libreria.francogagliardi.me/js/nucleo/api.js:266:16)\n    at async Promise.all (index 0)\n    at async cargarTodo (https://libreria.francogagliardi.me/js/nucleo/api.js:345:24)"
+    }
+  ],
+  "excepciones": [],
+  "red": [
+    {
+      "ts": "2026-11-13T16:40:30.944Z",
+      "fase": "normal",
+      "metodo": "GET",
+      "url": "https://libreria.francogagliardi.me/api/editoriales/?limit=100&offset=0",
+      "postData": null,
+      "status": 200,
+      "mimeType": "application/json"
+    },
+    {
+      "ts": "2026-11-13T16:40:30.944Z",
+      "fase": "normal",
+      "metodo": "GET",
+      "url": "https://libreria.francogagliardi.me/api/generos/",
+      "postData": null,
+      "status": 200,
+      "mimeType": "application/json"
+    },
+    {
+      "ts": "2026-11-13T16:40:30.945Z",
+      "fase": "normal",
+      "metodo": "GET",
+      "url": "https://libreria.francogagliardi.me/api/autores/?limit=100&offset=0",
+      "postData": null,
+      "status": 200,
+      "mimeType": "application/json"
+    },
+    {
+      "ts": "2026-11-13T16:40:30.945Z",
+      "fase": "normal",
+      "metodo": "GET",
+      "url": "https://libreria.francogagliardi.me/api/libros/?limit=100&offset=0",
+      "postData": null,
+      "status": 200,
+      "mimeType": "application/json"
+    },
+    {
+      "ts": "2026-11-13T16:40:30.945Z",
+      "fase": "normal",
+      "metodo": "GET",
+      "url": "https://libreria.francogagliardi.me/api/clientes/?limit=100&offset=0",
+      "postData": null,
+      "status": 200,
+      "mimeType": "application/json"
+    },
+    {
+      "ts": "2026-11-13T16:40:30.946Z",
+      "fase": "normal",
+      "metodo": "GET",
+      "url": "https://libreria.francogagliardi.me/api/ventas/?limit=20&offset=0",
+      "postData": null,
+      "status": 200,
+      "mimeType": "application/json"
+    },
+    {
+      "ts": "2026-11-13T16:40:30.951Z",
+      "fase": "normal",
+      "metodo": "GET",
+      "url": "https://libreria.francogagliardi.me/api/libros/?limit=20&offset=0",
+      "postData": null,
+      "status": 200,
+      "mimeType": "application/json"
+    },
+    {
+      "ts": "2026-11-13T16:40:30.951Z",
+      "fase": "normal",
+      "metodo": "GET",
+      "url": "https://libreria.francogagliardi.me/api/ventas/?limit=20&offset=0",
+      "postData": null,
+      "status": 200,
+      "mimeType": "application/json"
+    },
+    {
+      "ts": "2026-11-13T16:40:31.128Z",
+      "fase": "normal",
+      "metodo": "GET",
+      "url": "https://libreria.francogagliardi.me/api/libros/1",
+      "postData": null,
+      "status": 200,
+      "mimeType": "application/json"
+    },
+    {
+      "ts": "2026-11-13T16:40:31.129Z",
+      "fase": "normal",
+      "metodo": "GET",
+      "url": "https://libreria.francogagliardi.me/api/libros/2",
+      "postData": null,
+      "status": 200,
+      "mimeType": "application/json"
+    },
+    {
+      "ts": "2026-11-13T16:40:31.129Z",
+      "fase": "normal",
+      "metodo": "GET",
+      "url": "https://libreria.francogagliardi.me/api/libros/3",
+      "postData": null,
+      "status": 200,
+      "mimeType": "application/json"
+    },
+    {
+      "ts": "2026-11-13T16:40:31.129Z",
+      "fase": "normal",
+      "metodo": "GET",
+      "url": "https://libreria.francogagliardi.me/api/libros/4",
+      "postData": null,
+      "status": 200,
+      "mimeType": "application/json"
+    },
+    {
+      "ts": "2026-11-13T16:40:31.133Z",
+      "fase": "normal",
+      "metodo": "GET",
+      "url": "https://libreria.francogagliardi.me/api/libros/1",
+      "postData": null,
+      "status": 200,
+      "mimeType": "application/json"
+    },
+    {
+      "ts": "2026-11-13T16:40:31.133Z",
+      "fase": "normal",
+      "metodo": "GET",
+      "url": "https://libreria.francogagliardi.me/api/libros/2",
+      "postData": null,
+      "status": 200,
+      "mimeType": "application/json"
+    },
+    {
+      "ts": "2026-11-13T16:40:31.133Z",
+      "fase": "normal",
+      "metodo": "GET",
+      "url": "https://libreria.francogagliardi.me/api/libros/3",
+      "postData": null,
+      "status": 200,
+      "mimeType": "application/json"
+    },
+    {
+      "ts": "2026-11-13T16:40:31.133Z",
+      "fase": "normal",
+      "metodo": "GET",
+      "url": "https://libreria.francogagliardi.me/api/libros/4",
+      "postData": null,
+      "status": 200,
+      "mimeType": "application/json"
+    },
+    {
+      "ts": "2026-11-13T16:40:33.282Z",
+      "fase": "normal",
+      "metodo": "GET",
+      "url": "https://libreria.francogagliardi.me/api/libros/?limit=20&offset=0&titulo=RAYU",
+      "postData": null,
+      "status": 200,
+      "mimeType": "application/json"
+    },
+    {
+      "ts": "2026-11-13T16:40:33.368Z",
+      "fase": "normal",
+      "metodo": "GET",
+      "url": "https://libreria.francogagliardi.me/api/libros/1",
+      "postData": null,
+      "status": 200,
+      "mimeType": "application/json"
+    },
+    {
+      "ts": "2026-11-13T16:40:33.799Z",
+      "fase": "normal",
+      "metodo": "GET",
+      "url": "https://libreria.francogagliardi.me/api/libros/?limit=20&offset=0&titulo=rayu",
+      "postData": null,
+      "status": 200,
+      "mimeType": "application/json"
+    },
+    {
+      "ts": "2026-11-13T16:40:33.884Z",
+      "fase": "normal",
+      "metodo": "GET",
+      "url": "https://libreria.francogagliardi.me/api/libros/1",
+      "postData": null,
+      "status": 200,
+      "mimeType": "application/json"
+    },
+    {
+      "ts": "2026-11-13T16:40:34.313Z",
+      "fase": "normal",
+      "metodo": "GET",
+      "url": "https://libreria.francogagliardi.me/api/libros/?limit=20&offset=0",
+      "postData": null,
+      "status": 200,
+      "mimeType": "application/json"
+    },
+    {
+      "ts": "2026-11-13T16:40:34.393Z",
+      "fase": "normal",
+      "metodo": "GET",
+      "url": "https://libreria.francogagliardi.me/api/libros/1",
+      "postData": null,
+      "status": 200,
+      "mimeType": "application/json"
+    },
+    {
+      "ts": "2026-11-13T16:40:34.393Z",
+      "fase": "normal",
+      "metodo": "GET",
+      "url": "https://libreria.francogagliardi.me/api/libros/2",
+      "postData": null,
+      "status": 200,
+      "mimeType": "application/json"
+    },
+    {
+      "ts": "2026-11-13T16:40:34.394Z",
+      "fase": "normal",
+      "metodo": "GET",
+      "url": "https://libreria.francogagliardi.me/api/libros/3",
+      "postData": null,
+      "status": 200,
+      "mimeType": "application/json"
+    },
+    {
+      "ts": "2026-11-13T16:40:34.394Z",
+      "fase": "normal",
+      "metodo": "GET",
+      "url": "https://libreria.francogagliardi.me/api/libros/4",
+      "postData": null,
+      "status": 200,
+      "mimeType": "application/json"
+    },
+    {
+      "ts": "2026-11-13T16:40:35.100Z",
+      "fase": "normal",
+      "metodo": "GET",
+      "url": "https://libreria.francogagliardi.me/api/libros/?limit=20&offset=0&titulo=zzzz-no-existe-999",
+      "postData": null,
+      "status": 200,
+      "mimeType": "application/json"
+    },
+    {
+      "ts": "2026-11-13T16:40:35.775Z",
+      "fase": "normal",
+      "metodo": "GET",
+      "url": "https://libreria.francogagliardi.me/api/libros/?limit=20&offset=0",
+      "postData": null,
+      "status": 200,
+      "mimeType": "application/json"
+    },
+    {
+      "ts": "2026-11-13T16:40:35.858Z",
+      "fase": "normal",
+      "metodo": "GET",
+      "url": "https://libreria.francogagliardi.me/api/libros/1",
+      "postData": null,
+      "status": 200,
+      "mimeType": "application/json"
+    },
+    {
+      "ts": "2026-11-13T16:40:35.858Z",
+      "fase": "normal",
+      "metodo": "GET",
+      "url": "https://libreria.francogagliardi.me/api/libros/2",
+      "postData": null,
+      "status": 200,
+      "mimeType": "application/json"
+    },
+    {
+      "ts": "2026-11-13T16:40:35.859Z",
+      "fase": "normal",
+      "metodo": "GET",
+      "url": "https://libreria.francogagliardi.me/api/libros/3",
+      "postData": null,
+      "status": 200,
+      "mimeType": "application/json"
+    },
+    {
+      "ts": "2026-11-13T16:40:35.859Z",
+      "fase": "normal",
+      "metodo": "GET",
+      "url": "https://libreria.francogagliardi.me/api/libros/4",
+      "postData": null,
+      "status": 200,
+      "mimeType": "application/json"
+    },
+    {
+      "ts": "2026-11-13T16:40:37.096Z",
+      "fase": "normal",
+      "metodo": "POST",
+      "url": "https://libreria.francogagliardi.me/api/libros/",
+      "postData": "{\"isbn\":\"978-950-07-0001-1\",\"titulo\":\"QA temporal sin crear\",\"precio\":\"100.00\",\"stock\":0,\"editorial_id\":1,\"genero_id\":null,\"autores\":[{\"autor_id\":1,\"rol\":\"autor\",\"orden\":1}]}",
+      "status": 409,
+      "mimeType": "application/json"
+    },
+    {
+      "ts": "2026-11-13T16:40:38.960Z",
+      "fase": "normal",
+      "metodo": "POST",
+      "url": "https://libreria.francogagliardi.me/api/clientes/",
+      "postData": "{\"nombre\":\"QA Prueba Paso 7\",\"email\":\"ana@example.com\"}",
+      "status": 409,
+      "mimeType": "application/json"
+    },
+    {
+      "ts": "2026-11-13T16:40:44.162Z",
+      "fase": "normal",
+      "metodo": "GET",
+      "url": "https://libreria.francogagliardi.me/api/ventas/5",
+      "postData": null,
+      "status": 200,
+      "mimeType": "application/json"
+    },
+    {
+      "ts": "2026-11-13T16:40:50.224Z",
+      "fase": "normal",
+      "metodo": "GET",
+      "url": "https://libreria.francogagliardi.me/api/editoriales/?limit=100&offset=0",
+      "postData": null,
+      "status": 200,
+      "mimeType": "application/json"
+    },
+    {
+      "ts": "2026-11-13T16:40:50.224Z",
+      "fase": "normal",
+      "metodo": "GET",
+      "url": "https://libreria.francogagliardi.me/api/generos/",
+      "postData": null,
+      "status": 200,
+      "mimeType": "application/json"
+    },
+    {
+      "ts": "2026-11-13T16:40:50.225Z",
+      "fase": "normal",
+      "metodo": "GET",
+      "url": "https://libreria.francogagliardi.me/api/autores/?limit=100&offset=0",
+      "postData": null,
+      "status": 200,
+      "mimeType": "application/json"
+    },
+    {
+      "ts": "2026-11-13T16:40:50.225Z",
+      "fase": "normal",
+      "metodo": "GET",
+      "url": "https://libreria.francogagliardi.me/api/libros/?limit=100&offset=0",
+      "postData": null,
+      "status": 200,
+      "mimeType": "application/json"
+    },
+    {
+      "ts": "2026-11-13T16:40:50.233Z",
+      "fase": "normal",
+      "metodo": "GET",
+      "url": "https://libreria.francogagliardi.me/api/clientes/?limit=100&offset=0",
+      "postData": null,
+      "status": 200,
+      "mimeType": "application/json"
+    },
+    {
+      "ts": "2026-11-13T16:40:50.234Z",
+      "fase": "normal",
+      "metodo": "GET",
+      "url": "https://libreria.francogagliardi.me/api/ventas/?limit=20&offset=0",
+      "postData": null,
+      "status": 200,
+      "mimeType": "application/json"
+    },
+    {
+      "ts": "2026-11-13T16:40:50.234Z",
+      "fase": "normal",
+      "metodo": "GET",
+      "url": "https://libreria.francogagliardi.me/api/libros/?limit=20&offset=0",
+      "postData": null,
+      "status": 200,
+      "mimeType": "application/json"
+    },
+    {
+      "ts": "2026-11-13T16:40:50.235Z",
+      "fase": "normal",
+      "metodo": "GET",
+      "url": "https://libreria.francogagliardi.me/api/ventas/?limit=20&offset=0",
+      "postData": null,
+      "status": 200,
+      "mimeType": "application/json"
+    },
+    {
+      "ts": "2026-11-13T16:40:50.448Z",
+      "fase": "normal",
+      "metodo": "GET",
+      "url": "https://libreria.francogagliardi.me/api/libros/1",
+      "postData": null,
+      "status": 200,
+      "mimeType": "application/json"
+    },
+    {
+      "ts": "2026-11-13T16:40:50.450Z",
+      "fase": "normal",
+      "metodo": "GET",
+      "url": "https://libreria.francogagliardi.me/api/libros/2",
+      "postData": null,
+      "status": 200,
+      "mimeType": "application/json"
+    },
+    {
+      "ts": "2026-11-13T16:40:50.451Z",
+      "fase": "normal",
+      "metodo": "GET",
+      "url": "https://libreria.francogagliardi.me/api/libros/3",
+      "postData": null,
+      "status": 200,
+      "mimeType": "application/json"
+    },
+    {
+      "ts": "2026-11-13T16:40:50.451Z",
+      "fase": "normal",
+      "metodo": "GET",
+      "url": "https://libreria.francogagliardi.me/api/libros/4",
+      "postData": null,
+      "status": 200,
+      "mimeType": "application/json"
+    },
+    {
+      "ts": "2026-11-13T16:40:50.498Z",
+      "fase": "normal",
+      "metodo": "GET",
+      "url": "https://libreria.francogagliardi.me/api/libros/1",
+      "postData": null,
+      "status": 200,
+      "mimeType": "application/json"
+    },
+    {
+      "ts": "2026-11-13T16:40:50.498Z",
+      "fase": "normal",
+      "metodo": "GET",
+      "url": "https://libreria.francogagliardi.me/api/libros/2",
+      "postData": null,
+      "status": 200,
+      "mimeType": "application/json"
+    },
+    {
+      "ts": "2026-11-13T16:40:50.499Z",
+      "fase": "normal",
+      "metodo": "GET",
+      "url": "https://libreria.francogagliardi.me/api/libros/3",
+      "postData": null,
+      "status": 200,
+      "mimeType": "application/json"
+    },
+    {
+      "ts": "2026-11-13T16:40:50.499Z",
+      "fase": "normal",
+      "metodo": "GET",
+      "url": "https://libreria.francogagliardi.me/api/libros/4",
+      "postData": null,
+      "status": 200,
+      "mimeType": "application/json"
+    },
+    {
+      "ts": "2026-11-13T16:40:57.363Z",
+      "fase": "api-bloqueada",
+      "metodo": "GET",
+      "url": "https://libreria.francogagliardi.me/api/editoriales/?limit=100&offset=0",
+      "postData": null,
+      "status": "FALLO",
+      "error": ""
+    },
+    {
+      "ts": "2026-11-13T16:40:57.365Z",
+      "fase": "api-bloqueada",
+      "metodo": "GET",
+      "url": "https://libreria.francogagliardi.me/api/generos/",
+      "postData": null,
+      "status": "FALLO",
+      "error": ""
+    },
+    {
+      "ts": "2026-11-13T16:40:57.366Z",
+      "fase": "api-bloqueada",
+      "metodo": "GET",
+      "url": "https://libreria.francogagliardi.me/api/autores/?limit=100&offset=0",
+      "postData": null,
+      "status": "FALLO",
+      "error": ""
+    },
+    {
+      "ts": "2026-11-13T16:40:57.367Z",
+      "fase": "api-bloqueada",
+      "metodo": "GET",
+      "url": "https://libreria.francogagliardi.me/api/libros/?limit=100&offset=0",
+      "postData": null,
+      "status": "FALLO",
+      "error": ""
+    },
+    {
+      "ts": "2026-11-13T16:40:57.379Z",
+      "fase": "api-bloqueada",
+      "metodo": "GET",
+      "url": "https://libreria.francogagliardi.me/api/clientes/?limit=100&offset=0",
+      "postData": null,
+      "status": "FALLO",
+      "error": ""
+    },
+    {
+      "ts": "2026-11-13T16:40:57.380Z",
+      "fase": "api-bloqueada",
+      "metodo": "GET",
+      "url": "https://libreria.francogagliardi.me/api/ventas/?limit=20&offset=0",
+      "postData": null,
+      "status": "FALLO",
+      "error": ""
+    },
+    {
+      "ts": "2026-11-13T16:40:57.381Z",
+      "fase": "api-bloqueada",
+      "metodo": "GET",
+      "url": "https://libreria.francogagliardi.me/api/libros/?limit=20&offset=0",
+      "postData": null,
+      "status": "FALLO",
+      "error": ""
+    },
+    {
+      "ts": "2026-11-13T16:40:57.382Z",
+      "fase": "api-bloqueada",
+      "metodo": "GET",
+      "url": "https://libreria.francogagliardi.me/api/ventas/?limit=20&offset=0",
+      "postData": null,
+      "status": "FALLO",
+      "error": ""
+    },
+    {
+      "ts": "2026-11-13T16:40:58.154Z",
+      "fase": "normal",
+      "metodo": "GET",
+      "url": "https://libreria.francogagliardi.me/api/editoriales/?limit=100&offset=0",
+      "postData": null,
+      "status": 200,
+      "mimeType": "application/json"
+    },
+    {
+      "ts": "2026-11-13T16:40:58.155Z",
+      "fase": "normal",
+      "metodo": "GET",
+      "url": "https://libreria.francogagliardi.me/api/generos/",
+      "postData": null,
+      "status": 200,
+      "mimeType": "application/json"
+    },
+    {
+      "ts": "2026-11-13T16:40:58.156Z",
+      "fase": "normal",
+      "metodo": "GET",
+      "url": "https://libreria.francogagliardi.me/api/autores/?limit=100&offset=0",
+      "postData": null,
+      "status": 200,
+      "mimeType": "application/json"
+    },
+    {
+      "ts": "2026-11-13T16:40:58.156Z",
+      "fase": "normal",
+      "metodo": "GET",
+      "url": "https://libreria.francogagliardi.me/api/libros/?limit=100&offset=0",
+      "postData": null,
+      "status": 200,
+      "mimeType": "application/json"
+    },
+    {
+      "ts": "2026-11-13T16:40:58.156Z",
+      "fase": "normal",
+      "metodo": "GET",
+      "url": "https://libreria.francogagliardi.me/api/clientes/?limit=100&offset=0",
+      "postData": null,
+      "status": 200,
+      "mimeType": "application/json"
+    },
+    {
+      "ts": "2026-11-13T16:40:58.156Z",
+      "fase": "normal",
+      "metodo": "GET",
+      "url": "https://libreria.francogagliardi.me/api/ventas/?limit=20&offset=0",
+      "postData": null,
+      "status": 200,
+      "mimeType": "application/json"
+    },
+    {
+      "ts": "2026-11-13T16:40:58.156Z",
+      "fase": "normal",
+      "metodo": "GET",
+      "url": "https://libreria.francogagliardi.me/api/libros/?limit=20&offset=0",
+      "postData": null,
+      "status": 200,
+      "mimeType": "application/json"
+    },
+    {
+      "ts": "2026-11-13T16:40:58.157Z",
+      "fase": "normal",
+      "metodo": "GET",
+      "url": "https://libreria.francogagliardi.me/api/ventas/?limit=20&offset=0",
+      "postData": null,
+      "status": 200,
+      "mimeType": "application/json"
+    },
+    {
+      "ts": "2026-11-13T16:40:58.329Z",
+      "fase": "normal",
+      "metodo": "GET",
+      "url": "https://libreria.francogagliardi.me/api/libros/1",
+      "postData": null,
+      "status": 200,
+      "mimeType": "application/json"
+    },
+    {
+      "ts": "2026-11-13T16:40:58.329Z",
+      "fase": "normal",
+      "metodo": "GET",
+      "url": "https://libreria.francogagliardi.me/api/libros/2",
+      "postData": null,
+      "status": 200,
+      "mimeType": "application/json"
+    },
+    {
+      "ts": "2026-11-13T16:40:58.331Z",
+      "fase": "normal",
+      "metodo": "GET",
+      "url": "https://libreria.francogagliardi.me/api/libros/3",
+      "postData": null,
+      "status": 200,
+      "mimeType": "application/json"
+    },
+    {
+      "ts": "2026-11-13T16:40:58.332Z",
+      "fase": "normal",
+      "metodo": "GET",
+      "url": "https://libreria.francogagliardi.me/api/libros/4",
+      "postData": null,
+      "status": 200,
+      "mimeType": "application/json"
+    },
+    {
+      "ts": "2026-11-13T16:40:58.333Z",
+      "fase": "normal",
+      "metodo": "GET",
+      "url": "https://libreria.francogagliardi.me/api/libros/1",
+      "postData": null,
+      "status": 200,
+      "mimeType": "application/json"
+    },
+    {
+      "ts": "2026-11-13T16:40:58.333Z",
+      "fase": "normal",
+      "metodo": "GET",
+      "url": "https://libreria.francogagliardi.me/api/libros/2",
+      "postData": null,
+      "status": 200,
+      "mimeType": "application/json"
+    },
+    {
+      "ts": "2026-11-13T16:40:58.334Z",
+      "fase": "normal",
+      "metodo": "GET",
+      "url": "https://libreria.francogagliardi.me/api/libros/3",
+      "postData": null,
+      "status": 200,
+      "mimeType": "application/json"
+    },
+    {
+      "ts": "2026-11-13T16:40:58.334Z",
+      "fase": "normal",
+      "metodo": "GET",
+      "url": "https://libreria.francogagliardi.me/api/libros/4",
+      "postData": null,
+      "status": 200,
+      "mimeType": "application/json"
+    }
+  ]
+}

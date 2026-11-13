@@ -1,0 +1,439 @@
+HTTP/1.1 200 OK
+Cache-Control: no-cache
+Content-Type: text/html; charset=utf-8
+Cross-Origin-Opener-Policy: same-origin
+Date: Fri, 13 Nov 2026 15:50:43 GMT
+Etag: W/"6af6823c-38d1"
+Last-Modified: Fri, 13 Nov 2026 03:21:32 GMT
+Referrer-Policy: no-referrer
+Server: nginx
+Vary: Accept-Encoding
+X-Content-Type-Options: nosniff
+X-Frame-Options: SAMEORIGIN
+Transfer-Encoding: chunked
+
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Librería — Gestión y ventas</title>
+
+    <!-- M02: hojas de estilo — M02 agrega acá sus etiquetas de hoja de estilo locales (css/style.css y css/tema.css), sin recursos externos. -->
+    <link rel="stylesheet" href="css/style.css" />
+    <!-- FIN M02 -->
+    <link rel="stylesheet" href="css/tema.css" />
+    <script src="js/modulos/tema.js"></script>
+  </head>
+  <body>
+    <header id="cabecera">
+      <h1>Librería — Gestión y ventas</h1>
+      <!--<p>Administración de libros, clientes y ventas de una librería. Los datos se guardan en el navegador, sin servidor.</p>-->
+    </header>
+
+    <nav id="nav-principal" aria-label="Navegación principal">
+      <ul>
+        <li>
+          <a id="enlace-catalogo" href="#vista-catalogo" data-destino="catalogo"
+            >Catálogo</a
+          >
+        </li>
+        <li>
+          <a id="enlace-libros" href="#vista-libros" data-destino="libros"
+            >Libros</a
+          >
+        </li>
+        <li>
+          <a id="enlace-clientes" href="#vista-clientes" data-destino="clientes"
+            >Clientes</a
+          >
+        </li>
+        <li>
+          <a id="enlace-ventas" href="#vista-ventas" data-destino="ventas"
+            >Ventas</a
+          >
+        </li>
+        <li>
+          <a
+            id="enlace-historial"
+            href="#vista-historial"
+            data-destino="historial"
+            >Historial</a
+          >
+        </li>
+        <li>
+          <button
+            type="button"
+            id="btn-tema"
+            class="boton boton-tema"
+            aria-label="Activar el tema oscuro"
+            title="Activar el tema oscuro"
+          >
+            <svg
+              class="boton-tema__icono boton-tema__icono--luna"
+              viewBox="0 0 24 24"
+              aria-hidden="true"
+              focusable="false"
+            >
+              <path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z" />
+            </svg>
+            <svg
+              class="boton-tema__icono boton-tema__icono--sol"
+              viewBox="0 0 24 24"
+              aria-hidden="true"
+              focusable="false"
+            >
+              <circle cx="12" cy="12" r="4" />
+              <path
+                d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"
+              />
+            </svg>
+          </button>
+        </li>
+      </ul>
+    </nav>
+
+    <main id="main-principal">
+      <section id="vista-catalogo" class="vista" data-vista="catalogo">
+        <h2>Catálogo</h2>
+
+        <div class="tarjeta">
+          <h3>Buscar en el catálogo</h3>
+          <div class="campo">
+            <label for="buscador-catalogo">Buscar libro por título</label>
+            <input type="search" id="buscador-catalogo" />
+            <p>
+              Escribí una parte del título: la búsqueda no distingue mayúsculas
+              de minúsculas ni tiene en cuenta los espacios de los extremos.
+            </p>
+          </div>
+          <p
+            id="mensaje-catalogo-sin-resultados"
+            class="mensaje"
+            role="status"
+            aria-live="polite"
+          ></p>
+        </div>
+
+        <div class="tarjeta">
+          <h3>Libros disponibles</h3>
+          <div id="contenedor-tabla-catalogo" class="tabla-scroll">
+            <table class="tabla-datos">
+              <thead>
+                <tr>
+                  <th scope="col">Título</th>
+                  <th scope="col">ISBN</th>
+                  <th scope="col">Autor/es</th>
+                  <th scope="col">Editorial</th>
+                  <th scope="col">Género</th>
+                  <th scope="col">Precio</th>
+                </tr>
+              </thead>
+              <tbody id="cuerpo-tabla-catalogo"></tbody>
+            </table>
+          </div>
+          <div class="paginacion">
+            <button type="button" id="btn-catalogo-anterior" class="boton" disabled>
+              Anterior
+            </button>
+            <span id="pagina-catalogo" role="status" aria-live="polite">Página 1</span>
+            <button type="button" id="btn-catalogo-siguiente" class="boton" disabled>
+              Siguiente
+            </button>
+          </div>
+          <p
+            id="mensaje-catalogo-vacio"
+            class="mensaje"
+            role="status"
+            aria-live="polite"
+          ></p>
+          <p
+            id="mensaje-catalogo-error"
+            class="mensaje mensaje--error"
+            role="alert"
+          ></p>
+        </div>
+      </section>
+
+      <section id="vista-libros" class="vista" data-vista="libros">
+        <h2>Libros</h2>
+
+        <div class="tarjeta">
+          <h3>Alta de un libro</h3>
+          <form id="form-libro" novalidate>
+            <div class="campo campo-obligatorio">
+              <label for="libro-titulo">Título del libro</label>
+              <input type="text" id="libro-titulo" />
+            </div>
+            <div class="campo campo-obligatorio">
+              <label for="libro-isbn">ISBN (único por libro)</label>
+              <input type="text" id="libro-isbn" />
+            </div>
+            <div class="campo campo-obligatorio">
+              <label for="libro-precio">Precio en pesos</label>
+              <input
+                type="number"
+                id="libro-precio"
+                min="0"
+                step="0.01"
+                inputmode="decimal"
+              />
+            </div>
+            <div class="campo campo-obligatorio">
+              <label for="libro-stock">Stock (unidades)</label>
+              <input
+                type="number"
+                id="libro-stock"
+                min="0"
+                step="1"
+                inputmode="numeric"
+              />
+            </div>
+            <div class="campo campo-obligatorio">
+              <label for="libro-editorial">Editorial</label>
+              <select id="libro-editorial">
+                <option value="">Seleccione una editorial…</option>
+              </select>
+            </div>
+            <div class="campo">
+              <label for="libro-genero">Género (opcional)</label>
+              <select id="libro-genero">
+                <option value="">Seleccione un género…</option>
+              </select>
+            </div>
+            <div class="campo campo-obligatorio">
+              <label for="libro-autores"
+                >Autores (seleccioná al menos uno)</label
+              >
+              <select id="libro-autores" multiple>
+                <option value="">Seleccione uno o más autores…</option>
+              </select>
+              <p>
+                Mantené Ctrl (o Cmd) para elegir varios. Después indicá el rol y
+                el orden de cada uno.
+              </p>
+              <div id="libro-autores-detalle" class="autores-detalle"></div>
+            </div>
+            <div class="campo">
+              <button
+                type="submit"
+                id="btn-alta-libro"
+                class="boton boton--primario"
+              >
+                Dar de alta el libro
+              </button>
+            </div>
+            <p id="mensaje-libro" class="mensaje" role="alert"></p>
+          </form>
+        </div>
+
+        <div class="tarjeta">
+          <h3>Libros registrados</h3>
+          <div id="contenedor-tabla-libros" class="tabla-scroll">
+            <table class="tabla-datos">
+              <thead>
+                <tr>
+                  <th scope="col">Título</th>
+                  <th scope="col">ISBN</th>
+                  <th scope="col">Editorial</th>
+                  <th scope="col">Género</th>
+                  <th scope="col">Autores</th>
+                  <th scope="col">Precio</th>
+                </tr>
+              </thead>
+              <tbody id="cuerpo-tabla-libros"></tbody>
+            </table>
+          </div>
+          <p
+            id="mensaje-libros-vacio"
+            class="mensaje"
+            role="status"
+            aria-live="polite"
+          ></p>
+        </div>
+      </section>
+
+      <section id="vista-clientes" class="vista" data-vista="clientes">
+        <h2>Clientes</h2>
+
+        <div class="tarjeta">
+          <h3>Alta de un cliente</h3>
+          <form id="form-cliente" novalidate>
+            <div class="campo campo-obligatorio">
+              <label for="cliente-nombre">Nombre completo</label>
+              <input type="text" id="cliente-nombre" />
+            </div>
+            <div class="campo campo-obligatorio">
+              <label for="cliente-email">Correo electrónico</label>
+              <input type="email" id="cliente-email" />
+            </div>
+            <div class="campo">
+              <button
+                type="submit"
+                id="btn-alta-cliente"
+                class="boton boton--primario"
+              >
+                Dar de alta el cliente
+              </button>
+            </div>
+            <p id="mensaje-cliente" class="mensaje" role="alert"></p>
+          </form>
+        </div>
+
+        <div class="tarjeta">
+          <h3>Clientes registrados</h3>
+          <div id="contenedor-tabla-clientes" class="tabla-scroll">
+            <table class="tabla-datos">
+              <thead>
+                <tr>
+                  <th scope="col">Nombre completo</th>
+                  <th scope="col">Email</th>
+                </tr>
+              </thead>
+              <tbody id="cuerpo-tabla-clientes"></tbody>
+            </table>
+          </div>
+          <p
+            id="mensaje-clientes-vacio"
+            class="mensaje"
+            role="status"
+            aria-live="polite"
+          ></p>
+        </div>
+      </section>
+
+      <section id="vista-ventas" class="vista" data-vista="ventas">
+        <h2>Ventas</h2>
+
+        <div class="tarjeta">
+          <h3>Composición de la venta</h3>
+          <div class="campo campo-obligatorio">
+            <label for="venta-cliente">Cliente de la venta</label>
+            <select id="venta-cliente">
+              <option value="">Seleccione un cliente…</option>
+            </select>
+          </div>
+          <div class="campo campo-obligatorio">
+            <label for="venta-libro">Libro del renglón</label>
+            <select id="venta-libro">
+              <option value="">Seleccione un libro…</option>
+            </select>
+          </div>
+          <div class="campo campo-obligatorio">
+            <label for="venta-cantidad">Cantidad de ejemplares</label>
+            <input
+              type="number"
+              id="venta-cantidad"
+              min="1"
+              step="1"
+              inputmode="numeric"
+            />
+          </div>
+          <div class="campo">
+            <button
+              type="button"
+              id="btn-agregar-renglon"
+              class="boton boton--primario"
+            >
+              Agregar el libro al ticket
+            </button>
+          </div>
+        </div>
+
+        <div class="tarjeta">
+          <h3>Renglones del ticket</h3>
+          <div id="contenedor-tabla-renglones" class="tabla-scroll">
+            <table class="tabla-datos">
+              <thead>
+                <tr>
+                  <th scope="col">Libro</th>
+                  <th scope="col">Precio unitario</th>
+                  <th scope="col">Cantidad</th>
+                  <th scope="col">Subtotal</th>
+                </tr>
+              </thead>
+              <tbody id="cuerpo-tabla-renglones"></tbody>
+            </table>
+          </div>
+          <p
+            id="mensaje-renglones-vacio"
+            class="mensaje"
+            role="status"
+            aria-live="polite"
+          ></p>
+        </div>
+
+        <div class="tarjeta">
+          <h3>Resumen de la venta</h3>
+          <div class="campo">
+            <label for="venta-total">Total de la venta</label>
+            <output id="venta-total">0.00</output>
+          </div>
+          <div class="campo">
+            <button
+              type="button"
+              id="btn-confirmar-venta"
+              class="boton boton--primario"
+            >
+              Confirmar la venta
+            </button>
+          </div>
+          <p id="mensaje-venta" class="mensaje" role="alert"></p>
+        </div>
+      </section>
+
+      <section id="vista-historial" class="vista" data-vista="historial">
+        <h2>Historial</h2>
+
+        <div class="tarjeta">
+          <h3>Ventas registradas</h3>
+          <div id="contenedor-tabla-historial" class="tabla-scroll">
+            <table class="tabla-datos">
+              <thead>
+                <tr>
+                  <th scope="col">Fecha</th>
+                  <th scope="col">Cliente</th>
+                  <th scope="col">Detalle</th>
+                  <th scope="col">Total</th>
+                </tr>
+              </thead>
+              <tbody id="cuerpo-tabla-historial"></tbody>
+            </table>
+          </div>
+          <div class="paginacion">
+            <button type="button" id="btn-historial-anterior" class="boton" disabled>
+              Anterior
+            </button>
+            <span id="pagina-historial" role="status" aria-live="polite">Página 1</span>
+            <button type="button" id="btn-historial-siguiente" class="boton" disabled>
+              Siguiente
+            </button>
+          </div>
+          <p
+            id="mensaje-historial-vacio"
+            class="mensaje"
+            role="status"
+            aria-live="polite"
+          ></p>
+          <p
+            id="mensaje-historial-error"
+            class="mensaje mensaje--error"
+            role="alert"
+          ></p>
+        </div>
+      </section>
+    </main>
+
+    <!-- M03-M06: scripts de la aplicación — M03 a M06 agregan acá sus etiquetas de script locales (js/nucleo/... y js/modulos/...), en orden de dependencia. -->
+    <script src="js/nucleo/data.js"></script>
+    <script src="js/modulos/catalogo.js"></script>
+    <script src="js/nucleo/navegacion.js"></script>
+    <script src="js/modulos/libros.js"></script>
+    <script src="js/modulos/clientes.js"></script>
+    <script src="js/modulos/ventas.js"></script>
+    <script src="js/modulos/historial.js"></script>
+    <!-- Global · Paso 1: cliente HTTP de la API (js/nucleo/api.js) — se carga al final porque, al recibir los datos, redibuja las vistas ya inicializadas. -->
+    <script src="js/nucleo/api.js"></script>
+    <!-- FIN scripts -->
+  </body>
+</html>

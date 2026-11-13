@@ -1,7 +1,7 @@
 # Despliegue automático a la VPS (EasyPanel) al hacer push a main.
 #
 # 1) Job "build": construye la imagen y la arranca para verificar que el sitio
-#    responde. Si el Dockerfile o nginx.conf se rompen, el deploy no sale.
+#    responde. Si el Dockerfile o default.conf.template se rompen, el deploy no sale.
 # 2) Job "deploy": dispara el webhook de la app en EasyPanel, que baja el
 #    commit nuevo y reconstruye el contenedor en la VPS.
 #

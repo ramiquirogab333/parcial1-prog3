@@ -1,0 +1,12 @@
+HTTP/1.1 200 OK
+Cache-Control: no-cache
+Content-Length: 31
+Content-Type: application/json
+Cross-Origin-Opener-Policy: same-origin
+Date: Fri, 13 Nov 2026 15:50:43 GMT
+Referrer-Policy: no-referrer
+Server: nginx
+X-Content-Type-Options: nosniff
+X-Frame-Options: SAMEORIGIN
+
+{"status":"ok","database":"up"}
