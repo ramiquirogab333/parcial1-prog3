@@ -315,6 +315,38 @@ select[multiple] {
   background-image: none;
 }
 
+/* Filas de autoría del alta de libros: nombre, rol y orden de cada autor elegido. */
+.autores-detalle {
+  display: grid;
+  gap: var(--space-sm);
+}
+
+.autores-detalle:empty {
+  display: none;
+}
+
+.fila-autor {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 9rem) 5rem;
+  gap: var(--space-sm);
+  align-items: center;
+}
+
+.fila-autor__nombre {
+  font-size: 0.9375rem;
+  overflow-wrap: anywhere;
+}
+
+@media (max-width: 30rem) {
+  .fila-autor {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .fila-autor__nombre {
+    grid-column: 1 / -1;
+  }
+}
+
 #form-libro,
 #form-cliente {
   display: grid;
@@ -323,8 +355,9 @@ select[multiple] {
   align-items: flex-end;
 }
 
-#form-libro > .campo:nth-of-type(6),
+/* Autores y botón ocupan todo el ancho: son el 7.º y 8.º campo desde que se sumó el stock. */
 #form-libro > .campo:nth-of-type(7),
+#form-libro > .campo:nth-of-type(8),
 #form-libro > .mensaje,
 #form-cliente > .mensaje,
 #vista-ventas .tarjeta:first-of-type > h3,
