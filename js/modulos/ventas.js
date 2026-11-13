@@ -1,15 +1,21 @@
 /**
- * M05 — Venta simulada.
+ * M05 — Venta (Global · Paso 6: registrada en la API).
  *
- * Compone el ticket (agregar, cambiar cantidad y quitar renglones), calcula subtotales
- * y total con dos decimales y confirma la venta en Datos.ventas. Cada venta confirmada
- * copia el precio unitario y los datos descriptivos (título, nombre del cliente), de modo
- * que el historial nunca los vuelve a leer del catálogo. Tras confirmar dispara
- * "datos-actualizados" en document con detail.coleccion = "ventas".
- * Inserta datos sólo con textContent / new Option, nunca como HTML.
+ * Compone el ticket en memoria (agregar, cambiar cantidad y quitar renglones) y muestra
+ * subtotales y total como ESTIMACIÓN con el precio del catálogo. Al confirmar envía a
+ * POST /ventas/ únicamente { cliente_id, renglones: [{ libro_id, cantidad }] }: el precio,
+ * el total, la fecha y el id los decide el servidor, que copia el precio del catálogo.
+ *
+ * - 201: se muestra un comprobante con los precios unitarios, subtotales y total DE LA
+ *   RESPUESTA, se limpia el ticket, se agrega la venta a Datos.ventas y se dispara
+ *   "datos-actualizados" con detail.coleccion = "ventas" para que el historial se recargue.
+ * - 409 / 422 / sin conexión: se muestra el mensaje y el borrador queda intacto.
+ * - Mientras se envía, el ticket queda bloqueado para evitar ventas duplicadas.
+ *
+ * Inserta datos sólo con textContent / createElement, nunca como HTML.
  *
  * Namespace público: Ventas.validarCantidad, redondear, calcularSubtotal, calcularTotal,
- * agregarRenglon, Ventas.render() (ver design.md de m05-venta-simulada-historial).
+ * agregarRenglon, construirCuerpo, Ventas.render() (ver design.md de m05-venta-simulada-historial).
  */
 
 var Ventas = (function () {
@@ -50,13 +56,31 @@ var Ventas = (function () {
       return "«" + titulo + "» quitado del ticket.";
     },
     rechazo: "No se pudo confirmar la venta: ",
+    sinApi: "No está disponible la conexión con el servidor.",
+    enviando: "Registrando la venta en el servidor…",
+    botonEnviando: "Registrando venta…",
     exito: function (id, total) {
-      return "Venta " + id + " confirmada por $ " + total.toFixed(2) + ".";
+      return "Venta " + id + " registrada por $ " + total.toFixed(2) + ".";
+    },
+    comprobanteTitulo: function (id) {
+      return "Comprobante de la venta " + id;
+    },
+    comprobanteDatos: function (fecha, cliente) {
+      return "Fecha: " + fecha + " · Cliente: " + cliente;
+    },
+    comprobanteTotal: function (total) {
+      return "Total registrado: $ " + total.toFixed(2);
     }
   };
 
+  // El comprobante no existe en el HTML: se crea al confirmar y no forma parte de IDS
+  // (iniciar() exige que todos los IDS estén presentes desde el principio).
+  var ID_COMPROBANTE = "comprobante-venta";
+
   var ticket = [];
   var iniciado = false;
+  var enviando = false;
+  var textoBotonConfirmar = "";
 
   // ---------- Helpers ----------
 
@@ -80,20 +104,9 @@ var Ventas = (function () {
     return celda;
   }
 
-  /** Devuelve el siguiente id libre del prefijo: ven-01, ven-02, … */
-  function siguienteId(coleccion, prefijo) {
-    var patron = new RegExp("^" + prefijo + "-(\\d+)$");
-    var mayor = 0;
-
-    coleccion.forEach(function (registro) {
-      var coincidencia = patron.exec(registro.id);
-      if (coincidencia !== null) {
-        mayor = Math.max(mayor, Number(coincidencia[1]));
-      }
-    });
-
-    var numero = String(mayor + 1);
-    return prefijo + "-" + (numero.length < 2 ? "0" + numero : numero);
+  function formatearFecha(iso) {
+    var fecha = new Date(iso);
+    return isNaN(fecha.getTime()) ? String(iso) : fecha.toLocaleString("es-AR");
   }
 
   // ---------- Lógica pura ----------
@@ -148,6 +161,19 @@ var Ventas = (function () {
     return "";
   }
 
+  /**
+   * Cuerpo exacto de POST /ventas/: solo identificadores numéricos y cantidades.
+   * Nunca viaja precio, total ni fecha: el servidor los toma del catálogo y los calcula.
+   */
+  function construirCuerpo(clienteId, renglones) {
+    return {
+      cliente_id: Number(clienteId),
+      renglones: renglones.map(function (renglon) {
+        return { libro_id: Number(renglon.libroId), cantidad: renglon.cantidad };
+      })
+    };
+  }
+
   // ---------- Mensajes ----------
 
   function mostrarMensaje(texto, esError) {
@@ -184,6 +210,7 @@ var Ventas = (function () {
     entrada.value = String(renglon.cantidad);
     entrada.setAttribute("inputmode", "numeric");
     entrada.setAttribute("aria-label", "Cantidad de " + renglon.titulo);
+    entrada.disabled = enviando;
     entrada.addEventListener("change", function () {
       alCambiarCantidad(renglon, entrada.value);
     });
@@ -200,6 +227,7 @@ var Ventas = (function () {
     boton.className = "boton";
     boton.textContent = TEXTOS.quitar;
     boton.setAttribute("aria-label", TEXTOS.quitar + " " + renglon.titulo + " del ticket");
+    boton.disabled = enviando;
     boton.addEventListener("click", function () {
       alQuitar(renglon);
     });
@@ -239,6 +267,10 @@ var Ventas = (function () {
   // ---------- Acciones del ticket ----------
 
   function alAgregar() {
+    if (enviando) {
+      return;
+    }
+
     var libro = buscarRegistro(Datos.libros, obtener(IDS.libro).value);
     var campoCantidad = obtener(IDS.cantidad);
 
@@ -265,11 +297,16 @@ var Ventas = (function () {
 
     campoCantidad.removeAttribute("aria-invalid");
     campoCantidad.value = "";
+    quitarComprobante(); // empezó una venta nueva: el comprobante anterior ya no corresponde
     render();
     mostrarMensaje(TEXTOS.agregado(libro.titulo), false);
   }
 
   function alCambiarCantidad(renglon, texto) {
+    if (enviando) {
+      return;
+    }
+
     var resultado = validarCantidad(texto);
 
     if (!resultado.ok) {
@@ -282,6 +319,10 @@ var Ventas = (function () {
   }
 
   function alQuitar(renglon) {
+    if (enviando) {
+      return;
+    }
+
     ticket = ticket.filter(function (existente) {
       return existente !== renglon;
     });
@@ -306,25 +347,92 @@ var Ventas = (function () {
     return problemas;
   }
 
-  function construirVenta(cliente) {
-    var renglones = ticket.map(function (renglon) {
-      return Object.freeze({
-        libroId: renglon.libroId,
-        titulo: renglon.titulo,
-        cantidad: renglon.cantidad,
-        precioUnitario: renglon.precioUnitario,
-        subtotal: calcularSubtotal(renglon.cantidad, renglon.precioUnitario)
-      });
+  // ---------- Comprobante (importes del servidor) ----------
+
+  function quitarComprobante() {
+    var anterior = obtener(ID_COMPROBANTE);
+    if (anterior !== null && anterior.parentNode !== null) {
+      anterior.parentNode.removeChild(anterior);
+    }
+  }
+
+  function crearElemento(etiqueta, texto) {
+    var elemento = document.createElement(etiqueta);
+    elemento.textContent = texto;
+    return elemento;
+  }
+
+  function crearTablaComprobante(venta) {
+    var contenedor = document.createElement("div");
+    var tabla = document.createElement("table");
+    var cabecera = document.createElement("thead");
+    var filaCabecera = document.createElement("tr");
+    var cuerpo = document.createElement("tbody");
+
+    contenedor.className = "tabla-scroll";
+    tabla.className = "tabla-datos";
+    ["Libro", "Cantidad", "Precio unitario", "Subtotal"].forEach(function (titulo) {
+      var encabezado = crearElemento("th", titulo);
+      encabezado.scope = "col";
+      filaCabecera.appendChild(encabezado);
+    });
+    cabecera.appendChild(filaCabecera);
+
+    venta.renglones.forEach(function (renglon) {
+      var fila = document.createElement("tr");
+      fila.appendChild(crearElemento("td", renglon.titulo));
+      fila.appendChild(crearElemento("td", String(renglon.cantidad)));
+      fila.appendChild(crearElemento("td", renglon.precioUnitario.toFixed(2)));
+      fila.appendChild(crearElemento("td", renglon.subtotal.toFixed(2)));
+      cuerpo.appendChild(fila);
     });
 
-    return Object.freeze({
-      id: siguienteId(Datos.ventas, "ven"),
-      fecha: new Date().toISOString(),
-      clienteId: cliente.id,
-      clienteNombre: cliente.nombre,
-      renglones: Object.freeze(renglones),
-      total: calcularTotal(renglones)
-    });
+    tabla.appendChild(cabecera);
+    tabla.appendChild(cuerpo);
+    contenedor.appendChild(tabla);
+    return contenedor;
+  }
+
+  /**
+   * Muestra debajo del mensaje la venta tal como la registró el servidor. Todos los
+   * importes salen de la respuesta, nunca de la estimación local del ticket.
+   */
+  function mostrarComprobante(venta) {
+    var mensaje = obtener(IDS.mensaje);
+    var bloque = document.createElement("div");
+
+    quitarComprobante();
+    bloque.id = ID_COMPROBANTE;
+    bloque.appendChild(crearElemento("h4", TEXTOS.comprobanteTitulo(venta.id)));
+    bloque.appendChild(crearElemento("p", TEXTOS.comprobanteDatos(formatearFecha(venta.fecha), venta.clienteNombre)));
+    bloque.appendChild(crearTablaComprobante(venta));
+    bloque.appendChild(crearElemento("p", TEXTOS.comprobanteTotal(venta.total)));
+    mensaje.parentNode.insertBefore(bloque, mensaje.nextSibling);
+  }
+
+  // ---------- Envío ----------
+
+  /** Bloquea el ticket mientras viaja la venta: ni doble clic ni cambios a mitad de camino. */
+  function bloquear(estado) {
+    var confirmar = obtener(IDS.confirmar);
+
+    enviando = estado;
+    confirmar.disabled = estado;
+    confirmar.textContent = estado ? TEXTOS.botonEnviando : textoBotonConfirmar;
+    confirmar.setAttribute("aria-busy", estado ? "true" : "false");
+    obtener(IDS.agregar).disabled = estado;
+    render();
+  }
+
+  function registrarExito(datos) {
+    var venta = API.normalizar.venta(datos);
+
+    Datos.ventas.unshift(venta);
+    limpiarFormulario();
+    mostrarComprobante(venta);
+    mostrarMensaje(TEXTOS.exito(venta.id, venta.total), false);
+    // Historial escucha este aviso y vuelve a pedir GET /ventas/ al servidor.
+    document.dispatchEvent(new CustomEvent("datos-actualizados", { detail: { coleccion: "ventas" } }));
   }
 
   function limpiarFormulario() {
@@ -336,25 +444,41 @@ var Ventas = (function () {
     render();
   }
 
-  function alConfirmar() {
+  /**
+   * Envía la venta. Ante cualquier rechazo (409, 422, sin conexión) el ticket no se toca:
+   * el usuario corrige el borrador y vuelve a confirmar.
+   */
+  async function alConfirmar() {
+    if (enviando) {
+      return;
+    }
+
     var cliente = obtener(IDS.cliente).value === "" ? null : buscarRegistro(Datos.clientes, obtener(IDS.cliente).value);
     var problemas = revisarVenta(cliente);
+    var resultado;
 
     if (problemas.length > 0) {
       mostrarMensaje(TEXTOS.rechazo + problemas.join(" "), true);
       return;
     }
-
-    var venta = construirVenta(cliente);
-    Datos.ventas.push(venta);
-
-    limpiarFormulario();
-    if (typeof Historial !== "undefined") {
-      Historial.render();
+    if (typeof API === "undefined") {
+      mostrarMensaje(TEXTOS.rechazo + TEXTOS.sinApi, true);
+      return;
     }
 
-    mostrarMensaje(TEXTOS.exito(venta.id, venta.total), false);
-    document.dispatchEvent(new CustomEvent("datos-actualizados", { detail: { coleccion: "ventas" } }));
+    bloquear(true);
+    mostrarMensaje(TEXTOS.enviando, false);
+    try {
+      resultado = await API.post("/ventas/", construirCuerpo(cliente.id, ticket));
+    } finally {
+      bloquear(false);
+    }
+
+    if (!resultado.ok) {
+      mostrarMensaje(TEXTOS.rechazo + resultado.mensaje, true);
+      return;
+    }
+    registrarExito(resultado.data);
   }
 
   // ---------- Inicio ----------
@@ -379,6 +503,7 @@ var Ventas = (function () {
       Datos.ventas = [];
     }
 
+    textoBotonConfirmar = obtener(IDS.confirmar).textContent.trim();
     render();
     obtener(IDS.agregar).addEventListener("click", alAgregar);
     obtener(IDS.confirmar).addEventListener("click", alConfirmar);
@@ -390,6 +515,7 @@ var Ventas = (function () {
     calcularSubtotal: calcularSubtotal,
     calcularTotal: calcularTotal,
     agregarRenglon: agregarRenglon,
+    construirCuerpo: construirCuerpo,
     render: render,
     iniciar: iniciar
   };
