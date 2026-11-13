@@ -1,0 +1,15 @@
+﻿HTTP/1.1 200 OK
+Accept-Ranges: bytes
+Cache-Control: no-cache
+Content-Length: 14545
+Content-Type: text/html; charset=utf-8
+Cross-Origin-Opener-Policy: same-origin
+Date: Fri, 13 Nov 2026 21:33:17 GMT
+Etag: "6af6823c-38d1"
+Last-Modified: Fri, 13 Nov 2026 03:21:32 GMT
+Referrer-Policy: no-referrer
+Server: nginx
+Vary: Accept-Encoding
+X-Content-Type-Options: nosniff
+X-Frame-Options: SAMEORIGIN
+

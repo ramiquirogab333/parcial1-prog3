@@ -1,0 +1,1 @@
+﻿[{"id":1,"fecha":"2026-11-11T22:48:02.688536Z","total":"77000.00","cliente":{"id":2,"nombre":"Tom├ís R├¡os","email":"tomas@example.com"}},{"id":4,"fecha":"2026-11-13T14:30:13.077595Z","total":"53500.50","cliente":{"id":2,"nombre":"Tom├ís R├¡os","email":"tomas@example.com"}}]

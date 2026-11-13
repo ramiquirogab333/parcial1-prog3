@@ -7,6 +7,80 @@ reenvía `/api/` al backend usando la variable `API_UPSTREAM` (sin build, sin np
 > describe **siguen en la raíz del repositorio**: este cambio sólo movió el
 > documento, no los archivos que usa el despliegue.
 
+## Estado actual del despliegue
+
+- **URL pública del front:** <https://libreria.francogagliardi.me>
+- **URL pública de la API:** <https://libros.francogagliardi.me>
+- **Documentación interactiva:** <https://libros.francogagliardi.me/docs>
+- **Fecha del despliegue:** 2026-11-13
+- **Variable `API_UPSTREAM`:** `libreria-api:8000`
+- **Servicios de EasyPanel:** `libreria` (front), `libreria-api` (back) y
+  `libreria-bd` (PostgreSQL), en el mismo proyecto.
+
+Verificación desde afuera:
+
+```bash
+curl -i https://libreria.francogagliardi.me/api/health/ready
+# HTTP 200  {"status":"ok","database":"up"}
+
+curl -s https://libreria.francogagliardi.me/api/libros/
+# Lista de libros reales de PostgreSQL
+
+curl -I https://libreria.francogagliardi.me/
+# HTTP 200  text/html
+```
+
+## Arquitectura
+
+```text
+Navegador
+  │  GET /api/libros/  (same-origin)
+  ▼
+nginx (contenedor del front)
+  ├── location /      → sirve index.html, css/ y js/
+  └── location /api/  → proxy_pass http://${API_UPSTREAM}/
+                              │
+                              ▼
+                        FastAPI + PostgreSQL
+```
+
+- El front es estático: no hay build, ni npm, ni backend dentro de la imagen.
+- nginx hace de único punto de entrada: sirve el sitio y reenvía `/api/` al
+  backend por la red interna de EasyPanel.
+- La barra final de `proxy_pass` es obligatoria: `/api/libros/` llega a FastAPI
+  como `/libros/`.
+- No hay CORS: el navegador siempre llama a `/api/...` en el mismo origen.
+
+## Cómo se actualiza
+
+1. Se hace `push` a la rama `main`.
+2. GitHub Actions construye la imagen, corre el smoke test y dispara el webhook
+   de EasyPanel.
+3. EasyPanel reconstruye y recrea el contenedor del front.
+4. Los datos **no se pierden**: viven en PostgreSQL, no en el contenedor del
+   front.
+5. Si cambió el backend, se redeploya su App service por separado; la base
+   conserva los datos.
+
+## Qué se agregó para que corra en el contenedor
+
+- `default.conf.template` con `location /api/` y `proxy_pass` al upstream.
+- `NGINX_ENVSUBST_FILTER=^API_UPSTREAM$` para que nginx reemplace solo esa
+  variable y no toque `$uri`, `$host`, etc.
+- `Dockerfile` con `nginx:1.30-alpine`, copia explícita de `index.html`, `css/`
+  y `js/`, y `HEALTHCHECK` sobre `127.0.0.1`.
+- `API_UPSTREAM` se carga en el entorno del servicio del front en EasyPanel;
+  **no** está en la imagen ni en el repositorio.
+- El front usa `/api` como base; no hay URL absoluta del backend en el JS.
+
+## Verificación funcional
+
+La QA completa contra la URL pública se ejecutó el **2026-11-13** con Chrome
+headless: **58/58 verificaciones OK**. El detalle, las capturas y las salidas de
+`curl` están en [`evidence/paso-7/`](../evidence/paso-7/). La demo mínima
+(catálogo → venta con 2 renglones → recarga → detalle del historial) quedó
+verificada en esa corrida.
+
 ## Archivos
 
 | Archivo | Dónde está | Para qué |
@@ -69,8 +143,8 @@ También se puede ejecutar a mano desde **Actions → Deploy a la VPS → Run wo
 
 ## Notas
 
-- El pipeline **no** commitea ni toca `openspec/`; el flujo SDD (propose → apply →
-  archive) sigue siendo el único camino para cambiar código de los módulos M01–M06.
+- El pipeline **no** commitea ni toca `openspec/` ni la documentación. El plan del
+  TP Global vive en `GLOBAL-CHANGE.md`.
 - Si el push solo cambia documentación, el deploy igual corre. Para evitarlo se
   puede agregar `paths-ignore: ['**.md', 'openspec/**']` al `on.push`.
 - El healthcheck (`wget --spider`) permite que EasyPanel/Docker reinicie el
