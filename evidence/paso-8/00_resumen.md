@@ -48,6 +48,13 @@ Desde la URL pública se verificó:
 Los importes del historial coinciden con los que devolvió la API. La venta de
 referencia es la **id 5** (cliente QA), con total `78500.50`.
 
+## Prueba manual adicional
+
+El **2026-11-13**, desde la URL pública, se dio de alta un libro y se abrió la
+aplicación en una ventana de **incógnito**. El libro apareció correctamente:
+como el incógnito no comparte `localStorage`, eso confirma que el dato se leyó
+de PostgreSQL a través de la API y no de una copia local del navegador.
+
 ## Conclusión
 
 El frontend está integrado con la API, desplegado en EasyPanel y verificado
