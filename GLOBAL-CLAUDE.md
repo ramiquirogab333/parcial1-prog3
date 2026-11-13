@@ -91,6 +91,7 @@
 | 5 | Santiago | `js/modulos/clientes.js` |
 | 6 | Ramiro | `js/modulos/ventas.js` |
 | 7 | Santiago | `README.md`, `.github/workflows/deploy.yml`, `evidence/` |
+| 9 | Santiago | `public/favicon.svg` (nuevo), `public/index.html`, `.github/workflows/deploy.yml`, `README.md` |
 | 8 | Franco | VPS, EasyPanel, `docs/DEPLOY.md`, evidencia final |
 
 **Si tu paso no está en la tabla, no toques nada.**

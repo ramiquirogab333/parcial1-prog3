@@ -70,5 +70,6 @@ Así, si la IA lee el archivo viejo, encuentra la redirección y no rechaza la i
 | 6 | Ramiro | Ventas (E3 escritura) |
 | 7 | Santiago | README, workflow del front y QA |
 | 8 | Franco | Deploy final, evidencia y demo |
+| 9 | Santiago | Favicon y ajuste de assets |
 
-**Orden:** `0 → 1 → 2 → 3 → 4 → 5 → 6 → 7 → 8`.
+**Orden:** `0 → 1 → 2 → 3 → 4 → 5 → 6 → 7 → 8 → 9`.

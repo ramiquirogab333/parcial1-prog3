@@ -332,8 +332,8 @@ la aplicación muestra su mensaje de error de conexión.
   1. construye la imagen;
   2. la arranca con `API_UPSTREAM=127.0.0.1:8000` (en CI no hay backend: el valor sólo
      permite que nginx resuelva el upstream y arranque);
-  3. smoke test: `GET /` responde con la página y cada uno de los **11 assets** locales
-     (`style.css`, `tema.css` y los 9 archivos de `public/js/`) responde `200`;
+  3. smoke test: `GET /` responde con la página y cada uno de los **12 assets** locales
+     (`style.css`, `tema.css`, `favicon.svg` y los 9 archivos de `public/js/`) responde `200`;
   4. un paso extra compara esa lista con los `href`/`src` de `public/index.html`, para que el smoke
      test falle si se agrega o quita un archivo;
   5. dispara el webhook de EasyPanel (`EASYPANEL_DEPLOY_WEBHOOK`, guardado como secret) con
@@ -395,7 +395,7 @@ Estado del servidor en el momento de la QA: 4 libros, 3 clientes y 3 ventas (ids
   entorno local con Docker no se ejecutó en la máquina de QA porque no había Docker
   instalado.
 - **CI en GitHub Actions**: no se ejecutó localmente; se verificó que la lista de assets del
-  smoke test coincide exactamente con los 11 archivos locales de `public/index.html` y que
+  smoke test coincide exactamente con los 12 archivos locales de `public/index.html` y que
   `deploy.yml` es coherente con el `Dockerfile` y `default.conf.template`.
 
 ---

@@ -99,6 +99,7 @@ Cuando el humano te pase la carpeta del repo, pedile que te diga **qué paso** l
 | 5 | Santiago | `js/modulos/clientes.js` |
 | 6 | Ramiro | `js/modulos/ventas.js` |
 | 7 | Santiago | `README.md`, `.github/workflows/deploy.yml`, `evidence/` |
+| 9 | Santiago | `public/favicon.svg` (nuevo), `public/index.html`, `.github/workflows/deploy.yml`, `README.md` |
 | 8 | Franco | VPS, EasyPanel, `docs/DEPLOY.md`, evidencia final |
 
 **Regla:** si tu paso no está en esta tabla, **no toques nada**. Preguntá.
@@ -117,6 +118,7 @@ Paso 0 (Franco, infra)
             → Paso 6 (Ramiro, ventas)
               → Paso 7 (Santiago, docs/QA)
                 → Paso 8 (Franco, deploy final)
+                  → Paso 9 (Santiago, favicon)
 ```
 
 - El paso N+1 arranca **después** del push del paso N.

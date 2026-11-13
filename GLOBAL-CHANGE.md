@@ -109,6 +109,7 @@ El trabajo se divide en **5 integrantes** (Franco queda aparte, a cargo de la VP
 | **6** | **Ramiro** | Ventas (E3 escritura): `POST /ventas/`, respuesta del servidor, errores | 2, 4, 5 | 3–4 h |
 | **7** | **Santiago** | README, workflow del front, QA y evidencia | todos | 2–3 h |
 | **8** | **Franco** | Deploy final, verificación en la URL, demo y cierre | 7 | 1 h |
+| **9** | **Santiago** | Favicon SVG, link en `public/index.html` y assets del workflow (12) | 7 | 15–30 min |
 
 > **Importante:** no se programa en paralelo. Como se trabaja directo sobre `main`, dos personas no pueden tocar el repo a la vez. El orden es estricto: 0 → 1 → 2 → 3 → 4 → 5 → 6 → 7 → 8.
 
@@ -527,6 +528,35 @@ HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
 5. Armar el ZIP final sin `.env`, `.venv` ni `__pycache__`.
 
 ---
+
+## 13.1. Paso 9 — Santiago: favicon y ajuste de assets
+
+> **Estado:** implementado en el cierre de la entrega. Se deja documentado como
+> change extra para que quede en el plan.
+
+**Objetivo:** que la pestaña del navegador muestre el ícono de la librería.
+
+### Archivos
+
+- `public/favicon.svg` (nuevo)
+- `public/index.html` (link en el `<head>`)
+- `.github/workflows/deploy.yml` (lista de assets del smoke test)
+- `README.md` (conteo de assets: 11 → 12)
+
+### Tareas
+
+1. Crear un SVG con los colores del sitio, sin recursos externos.
+2. Agregar `<link rel="icon" type="image/svg+xml" href="favicon.svg" />`.
+3. Sumar `/favicon.svg` al smoke test y a la lista esperada (12 assets).
+4. Actualizar el README.
+5. Verificar que la pestaña muestra el ícono y que el workflow pasa.
+
+### Criterio de aceptación
+
+- [ ] La pestaña muestra el favicon.
+- [ ] `/favicon.svg` responde `200`.
+- [ ] El workflow del front pasa.
+- [ ] No hay recursos externos.
 
 ## 14. Contrato de API (resumen para el front)
 

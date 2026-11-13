@@ -71,6 +71,7 @@ jobs:
           for ruta in \
             /css/style.css \
             /css/tema.css \
+            /favicon.svg \
             /js/nucleo/data.js \
             /js/modulos/catalogo.js \
             /js/nucleo/navegacion.js \
@@ -88,12 +89,12 @@ jobs:
             fi
             echo "OK: ${ruta}"
           done
-          echo "OK: los 11 assets responden"
+          echo "OK: los 12 assets responden"
 
       - name: El smoke test cubre todos los assets locales de index.html
         run: |
           set -euo pipefail
-          esperado="/css/style.css /css/tema.css /js/modulos/catalogo.js /js/modulos/clientes.js /js/modulos/historial.js /js/modulos/libros.js /js/modulos/tema.js /js/modulos/ventas.js /js/nucleo/api.js /js/nucleo/data.js /js/nucleo/navegacion.js"
+          esperado="/css/style.css /css/tema.css /favicon.svg /js/modulos/catalogo.js /js/modulos/clientes.js /js/modulos/historial.js /js/modulos/libros.js /js/modulos/tema.js /js/modulos/ventas.js /js/nucleo/api.js /js/nucleo/data.js /js/nucleo/navegacion.js"
           reales=$(grep -oE '(href|src)="[^"]+"' public/index.html \
             | sed -E 's/^(href|src)="//; s/"$//' \
             | grep -vE '^(https?:|#|mailto:|data:)' \
