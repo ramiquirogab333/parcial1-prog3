@@ -32,7 +32,7 @@ pública, con Chrome 156 headless. El detalle está en la sección 10 y en `evid
 
 ```
 Navegador
-  └─ index.html + css/ + js/            (sitio estático, sin build)
+  └─ public/ (index.html + css/ + js/)   (sitio estático, sin build)
         │  fetch("/api/…")
         ▼
      nginx (contenedor del front)
@@ -45,7 +45,7 @@ Navegador
 
 ### 2.1 Base de la API y proxy
 
-- El cliente HTTP vive en `js/nucleo/api.js` y usa `BASE = "/api"`. Todas las llamadas del
+- El cliente HTTP vive en `public/js/nucleo/api.js` y usa `BASE = "/api"`. Todas las llamadas del
   front son **relativas al mismo origen** (`/api/libros/`, `/api/clientes/`, …).
 - nginx resuelve el backend con `proxy_pass http://${API_UPSTREAM}/`. La **barra final** es
   obligatoria: hace que `/api/libros/` llegue a FastAPI como `/libros/`.
@@ -61,7 +61,7 @@ Los datos de la aplicación salen siempre de la API:
   libro para sus autorías), clientes y las últimas ventas. Recién cuando llegaron **todas**
   las respuestas reemplaza los arreglos de `Datos` y redibuja las vistas: se ve la
   información completa o un mensaje de error, nunca una mezcla.
-- `Datos` (`js/nucleo/data.js`) es sólo un contenedor en memoria que se llena desde la API.
+- `Datos` (`public/js/nucleo/data.js`) es sólo un contenedor en memoria que se llena desde la API.
   Arranca vacío: no hay datos de respaldo locales.
 - Los importes de una venta (precio unitario, subtotal y total) son los que devolvió el
   servidor al registrarla y se muestran tal cual; el front nunca los recalcula con el
@@ -72,7 +72,7 @@ Los datos de la aplicación salen siempre de la API:
 
 ### 2.3 Arranque y sincronización entre vistas
 
-- `index.html` carga los módulos y, al final, `js/nucleo/api.js`. Los módulos se dibujan
+- `public/index.html` carga los módulos y, al final, `public/js/nucleo/api.js`. Los módulos se dibujan
   primero con `Datos` vacío y registran sus eventos; cuando `API.cargarTodo()` termina,
   llama al `render()` de cada módulo con los datos del servidor.
 - Después de un alta exitosa, el módulo correspondiente actualiza `Datos` y emite el evento
@@ -87,36 +87,42 @@ Los datos de la aplicación salen siempre de la API:
 
 ```
 parcial1-prog3/
-├── index.html                     # Las 5 vistas en una sola página (navegación por hash)
-├── css/
-│   ├── style.css                  # Estilos generales, layout y componentes
-│   └── tema.css                   # Variables de los temas claro y oscuro
-├── js/
-│   ├── nucleo/
-│   │   ├── api.js                 # Cliente HTTP, normalización y carga inicial
-│   │   ├── data.js                # Contenedor en memoria + búsqueda local por título
-│   │   └── navegacion.js          # Cambio de vistas con hash y aria-current
-│   └── modulos/
-│       ├── catalogo.js            # Catálogo: búsqueda, paginación y estados
-│       ├── libros.js              # Alta de libros (con autores y roles)
-│       ├── clientes.js            # Alta de clientes
-│       ├── ventas.js              # Ticket y confirmación de venta
-│       ├── historial.js           # Listado y detalle de ventas
-│       └── tema.js                # Tema claro/oscuro (se carga en el <head>)
-├── Dockerfile                     # Imagen nginx con el sitio y la plantilla del proxy
+├── public/                        # Sitio estático: lo único que se copia a la imagen
+│   ├── index.html                 # Las 5 vistas en una sola página (navegación por hash)
+│   ├── css/
+│   │   ├── style.css              # Estilos generales, layout y componentes
+│   │   └── tema.css               # Variables de los temas claro y oscuro
+│   └── js/
+│       ├── nucleo/
+│       │   ├── api.js             # Cliente HTTP, normalización y carga inicial
+│       │   ├── data.js            # Contenedor en memoria + búsqueda local por título
+│       │   └── navegacion.js      # Cambio de vistas con hash y aria-current
+│       └── modulos/
+│           ├── catalogo.js        # Catálogo: búsqueda, paginación y estados
+│           ├── libros.js          # Alta de libros (con autores y roles)
+│           ├── clientes.js        # Alta de clientes
+│           ├── ventas.js          # Ticket y confirmación de venta
+│           ├── historial.js       # Listado y detalle de ventas
+│           └── tema.js            # Tema claro/oscuro (se carga en el <head>)
+├── Dockerfile                     # Imagen nginx: copia public/ y la plantilla del proxy
 ├── default.conf.template          # nginx: estáticos + proxy /api/ con ${API_UPSTREAM}
 ├── docker-compose.yml             # Prueba local del front en http://localhost:8080
 ├── .github/workflows/deploy.yml   # Build, smoke test y deploy a la VPS
 ├── docs/DEPLOY.md                 # Detalle de infraestructura y EasyPanel
-└── evidence/paso-7/               # Evidencia de la QA: JSON, log, capturas y curl
+└── evidence/
+    ├── paso-7/                    # QA completa: JSON, log, capturas y curl
+    └── paso-8/                    # Verificación final del despliegue
 ```
 
-> `js/nucleo/storage.js` ya no existe: la persistencia pasó al backend. El front no escribe
-> datos en `localStorage`.
+> `public/js/nucleo/storage.js` ya no existe: la persistencia pasó al backend. El front no
+> escribe datos en `localStorage` (salvo la preferencia de tema).
 
 ---
 
 ## 4. Módulos y responsabilidades
+
+> Las rutas de esta tabla son relativas a `public/` (por ejemplo, `js/modulos/libros.js`
+> es `public/js/modulos/libros.js`).
 
 | Módulo | Archivos | Responsabilidad actual |
 | --- | --- | --- |
@@ -308,14 +314,14 @@ curl -s http://localhost:8080/api/libros/
 ```
 
 Si el backend corre en otro host o puerto, cambiar `API_UPSTREAM` (formato `host:puerto`).
-Abrir `index.html` con doble clic (`file://`) **no** funciona: sin nginx no existe `/api` y
+Abrir `public/index.html` con doble clic (`file://`) **no** funciona: sin nginx no existe `/api` y
 la aplicación muestra su mensaje de error de conexión.
 
 ---
 
 ## 9. Despliegue
 
-- **Imagen** (`Dockerfile`): nginx alpine. Copia `index.html`, `css/` y `js/`, y
+- **Imagen** (`Dockerfile`): nginx alpine. Copia `public/` y
   `default.conf.template` a `/etc/nginx/templates/`. El entrypoint de nginx reemplaza
   `${API_UPSTREAM}` al arrancar (`NGINX_ENVSUBST_FILTER` limita la sustitución a esa
   variable). Incluye `HEALTHCHECK` con `wget --spider`.
@@ -327,8 +333,8 @@ la aplicación muestra su mensaje de error de conexión.
   2. la arranca con `API_UPSTREAM=127.0.0.1:8000` (en CI no hay backend: el valor sólo
      permite que nginx resuelva el upstream y arranque);
   3. smoke test: `GET /` responde con la página y cada uno de los **11 assets** locales
-     (`style.css`, `tema.css` y los 9 archivos de `js/`) responde `200`;
-  4. un paso extra compara esa lista con los `href`/`src` de `index.html`, para que el smoke
+     (`style.css`, `tema.css` y los 9 archivos de `public/js/`) responde `200`;
+  4. un paso extra compara esa lista con los `href`/`src` de `public/index.html`, para que el smoke
      test falle si se agrega o quita un archivo;
   5. dispara el webhook de EasyPanel (`EASYPANEL_DEPLOY_WEBHOOK`, guardado como secret) con
      reintentos.
@@ -385,11 +391,11 @@ Estado del servidor en el momento de la QA: 4 libros, 3 clientes y 3 ventas (ids
   precios en el front. La garantía se apoya en que los importes mostrados son los del
   servidor (verificado contra `GET /api/ventas/5`), no en un recálculo local.
 - **Flujo Docker local**: la QA corrió contra la URL pública. La imagen y el workflow se
-  validaron por inspección (incluida la réplica del chequeo de assets de `index.html`); el
+  validaron por inspección (incluida la réplica del chequeo de assets de `public/index.html`); el
   entorno local con Docker no se ejecutó en la máquina de QA porque no había Docker
   instalado.
 - **CI en GitHub Actions**: no se ejecutó localmente; se verificó que la lista de assets del
-  smoke test coincide exactamente con los 11 archivos locales de `index.html` y que
+  smoke test coincide exactamente con los 11 archivos locales de `public/index.html` y que
   `deploy.yml` es coherente con el `Dockerfile` y `default.conf.template`.
 
 ---

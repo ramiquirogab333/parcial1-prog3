@@ -14,12 +14,9 @@ FROM nginx:1.30-alpine
 # de nginx ($uri, $host, etc.) quedan intactas.
 ENV NGINX_ENVSUBST_FILTER=^API_UPSTREAM$
 
-# Sitio estático. Se copian explícitamente las carpetas públicas para que no
-# entren al contenedor la configuración, la documentación ni los archivos de
-# OpenSpec.
-COPY index.html /usr/share/nginx/html/
-COPY css/ /usr/share/nginx/html/css/
-COPY js/ /usr/share/nginx/html/js/
+# Sitio estático. public/ contiene index.html, css/ y js/; la configuración
+# (Dockerfile, default.conf.template, docs) queda fuera de la imagen.
+COPY public/ /usr/share/nginx/html/
 
 # Plantilla del proxy: el entrypoint de nginx la procesa al arrancar y genera
 # /etc/nginx/conf.d/default.conf con el valor real de API_UPSTREAM.

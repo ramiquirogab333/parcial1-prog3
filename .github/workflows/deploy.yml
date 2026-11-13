@@ -94,7 +94,7 @@ jobs:
         run: |
           set -euo pipefail
           esperado="/css/style.css /css/tema.css /js/modulos/catalogo.js /js/modulos/clientes.js /js/modulos/historial.js /js/modulos/libros.js /js/modulos/tema.js /js/modulos/ventas.js /js/nucleo/api.js /js/nucleo/data.js /js/nucleo/navegacion.js"
-          reales=$(grep -oE '(href|src)="[^"]+"' index.html \
+          reales=$(grep -oE '(href|src)="[^"]+"' public/index.html \
             | sed -E 's/^(href|src)="//; s/"$//' \
             | grep -vE '^(https?:|#|mailto:|data:)' \
             | sed 's|^|/|' \

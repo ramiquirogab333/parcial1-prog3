@@ -37,7 +37,7 @@ Navegador
   │  GET /api/libros/  (same-origin)
   ▼
 nginx (contenedor del front)
-  ├── location /      → sirve index.html, css/ y js/
+  ├── location /      → sirve public/index.html, public/css/ y public/js/
   └── location /api/  → proxy_pass http://${API_UPSTREAM}/
                               │
                               ▼
@@ -67,8 +67,8 @@ nginx (contenedor del front)
 - `default.conf.template` con `location /api/` y `proxy_pass` al upstream.
 - `NGINX_ENVSUBST_FILTER=^API_UPSTREAM$` para que nginx reemplace solo esa
   variable y no toque `$uri`, `$host`, etc.
-- `Dockerfile` con `nginx:1.30-alpine`, copia explícita de `index.html`, `css/`
-  y `js/`, y `HEALTHCHECK` sobre `127.0.0.1`.
+- `Dockerfile` con `nginx:1.30-alpine`, copia de `public/` y `HEALTHCHECK`
+  sobre `127.0.0.1`.
 - `API_UPSTREAM` se carga en el entorno del servicio del front en EasyPanel;
   **no** está en la imagen ni en el repositorio.
 - El front usa `/api` como base; no hay URL absoluta del backend en el JS.
@@ -87,6 +87,7 @@ verificada en esa corrida.
 | ----- | ----- | ----- |
 | `Dockerfile` | raíz | Imagen del sitio: nginx alpine + los archivos estáticos. |
 | `default.conf.template` | raíz | Plantilla de nginx: gzip, cabeceras, caché `no-cache`, `try_files` y proxy `/api/` con `${API_UPSTREAM}`. |
+| `public/` | raíz | Sitio estático: `index.html`, `css/` y `js/`. Es lo único que entra a `/usr/share/nginx/html/`. |
 | `.dockerignore` | raíz | Deja fuera del contexto `.git`, `.github`, `openspec`, `**/*.md`, etc. |
 | `docker-compose.yml` | raíz | Prueba local en `http://localhost:8080`. |
 | `.github/workflows/deploy.yml` | raíz | En cada push a `main`: construye la imagen, la prueba y dispara el deploy en EasyPanel. |

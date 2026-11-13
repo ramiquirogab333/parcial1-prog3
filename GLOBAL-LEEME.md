@@ -1,6 +1,8 @@
 # GLOBAL-LEEME.md — Cómo usar los archivos del TP Global
 
 > **Este archivo es el primero que hay que leer.** Los demás se llaman `GLOBAL-...` a propósito para no chocar con los archivos del Parcial 1 que ya están en el repo (`AGENTS.md`, `CLAUDE.md`, `CHANGE.md`).
+>
+> **Estructura final del repo:** el sitio vive en `public/` (`index.html`, `css/`, `js/`). El `Dockerfile` copia `public/`. Las rutas de los pasos en `GLOBAL-CHANGE.md` son históricas.
 
 ## 1. Qué hay en esta carpeta
 
